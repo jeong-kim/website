@@ -1,0 +1,170 @@
+---
+title: "Project 1"
+author: "Jeong Kim"
+date: "10/10/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Introduction
+The first dataset is the bad_drivers dataset from fivethirtyeight, titled "Dear Mona, Which State Has The Worst Drivers?" This dataset provides statistical data about the number of fatal car accidents by each state in 2012. There are 8 variables with 51 observations (one for each state). The variables are state, num_drivers = number of drivers involved in fatal collisions per billion miles, perc_speeding = percentage of drivers involved in fatal collisions who were speeding, perc_alcohol = percentage of drivers involved in fatal collisions who were alcohol-impaired, perc_not_distracted = percentage of drivers involved in fatal collisions who were not distracted, perc_no_previous = percentage of drivers involved in fatal collisions who had not been involved in any previous accidents, insurance_premiums = Car insurance premiums (in dollars), and losses = losses incurred by insurance companies for collisions per insured driver (in dollars). As a fellow driver on the streets, I was interested to see which states have more fatal car accidents and therefore bad drivers.
+  
+The second dataset is the druginduceddeaths dataset from Kaggler. This dataset provides statistical data about the number of drug induced deaths by each state from 1999 to 2015. There are 8 variables with 867 observations. The variables are State, Year, Deaths, Population, Crude Rate (Deaths per 100,000), Crude Rate Lower 95% CI, Crude Rate Upper 95% CI, and Crude Rate Standard Error. I selected this dataset because I was interested in the drug overdose epidemic and how it has grown into a serious problem that public health officials are looking to combat.
+
+By joining the two datasets, some potential associations I anticipate to see is a positive relationship between the number of drug deaths and the number of drivers involved in fatal collisions. There is a possibility that people who regularly take drugs are more reckless drivers, especially if they are under the influence. Furthermore, larger states should have the most number of drug deaths because they have a greater population size.
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+
+library(fivethirtyeight)
+data(bad_drivers)
+bad_drivers <- bad_drivers %>% na.omit()
+bad_drivers$state <- as.factor(bad_drivers$state)
+?bad_drivers
+
+deaths <- read_csv("druginduceddeaths.csv")
+deaths <- deaths %>% select("State", "Year", drugdeaths="Deaths", "Population", cruderate="Crude Rate") %>% na.omit()
+deaths$State <- as.factor(deaths$State)
+```
+
+## Tidying: Rearranging Wide/Long
+Both datasets were already tidy, so they were untidied with pivot_wider and retidied with pivot_longer. For the bad_drivers dataset, the states were made into new columns and the values were the number of drivers in fatal collisions using pivot_wider. When retidied, a column for State and number of drivers in fatal collisions were remade using pivot_longer. For the deaths dataset, the states were the new columns and the values were the corresponding number of drug deaths using pivot_wider. Then, pivot_longer was used to remake the columns for State and drugdeaths. There were several NA values, so I had to use na.omit when retidying them again.
+```{r}
+glimpse(drivers <- bad_drivers %>% pivot_wider(names_from="state", values_from="num_drivers"))
+glimpse(drivers <- drivers %>% pivot_longer(c(7:57), names_to="state", values_to="num_drivers") %>% na.omit)
+
+glimpse(deaths2 <- deaths %>% pivot_wider(names_from="State", values_from="drugdeaths"))
+glimpse(deaths2 <- deaths2 %>% pivot_longer(c(4:54), names_to="state", values_to="drugdeaths") %>% na.omit)
+```
+
+## Joining/Merging
+Since the number of observations are equivalent for both datasets, full_join was used which returned all rows and columns from both datasets without dropping anything. There were no cases that were dropped.
+```{r}
+deaths_drivers <- full_join(deaths, bad_drivers, by=c("State"="state"))
+```
+
+## Wrangling
+The merged dataset was filtered with the Year 2012 because the bad_drivers dataset only included data from 2012. I then selected for the variables I wanted to observe and arranged based on descending number of drug deaths. I created a variable called "fatal_rate" which was the number of drivers involved in fatal collisions per 100,000 population and arranged in descending order. I also created another variable that found the number of drivers involved in fatal collisions who were alcohol impaired from the perc_alcohol.
+```{r}
+glimpse(deaths_drivers %>% filter(Year=="2012"))
+glimpse(deaths_drivers %>% filter(Year=="2012") %>% select(State,Population,drugdeaths,num_drivers))
+glimpse(deaths_drivers %>% arrange(desc(drugdeaths)))
+
+glimpse(deaths_drivers2 <- deaths_drivers %>% filter(Year=="2012") %>% mutate(fatal_rate=(num_drivers/(Population/100000))) %>% arrange(desc(fatal_rate)))
+
+glimpse(deaths_drivers2 <- deaths_drivers2 %>% mutate(num_alc=(perc_alcohol/100)*num_drivers))
+```
+
+For summary statistics, I calculated the mean, standard deviation, variance, quantile, min, median, max, and ndistinct for drugdeaths, num_drivers, and crude rate. I created a categorical variable called insurance_cat using the numeric variable insurance_premiums to make low (<750), med (750-1000), and high (>1000) groups of car insurance premiums. I grouped by insurance_cat when calculating the summary statistics for num_drivers and cruderate.
+I found it interesting that the high insurance group had the lowest average number of drivers involved in fatal collisions which means that car insurance premiums are not always consistent with the number of high-risk drivers because some collisions are more costly than others. Insurance providers base their prices on several indicators, which contributes to the variation. However, when looking at individual states like New Jersey, which has the highest car insurance premium, there are a number of high risk drivers. On the other end, Idaho, which has lower car insurance premiums, have the good drivers. Furthermore, the low insurance group had the lowest mean crude rate of drug deaths which is an interesting correlation.
+As seen in the correlation matrix, drugdeaths has a .955 positive correlation with the Population size.
+```{r}
+deaths_drivers2 %>% summarize(mean_dd=mean(drugdeaths), sd_dd=sd(drugdeaths), var_dd=var(drugdeaths), quantile_dd=IQR(drugdeaths), min_dd=min(drugdeaths),med_dd=median(drugdeaths), max_dd=max(drugdeaths), ndist_dd=n_distinct(drugdeaths))
+
+deaths_drivers2 <- deaths_drivers2 %>% mutate(insurance_cat=case_when(insurance_premiums>1000 ~ "high", 750<=insurance_premiums & insurance_premiums<=1000 ~ "med", insurance_premiums<750 ~ "low"))
+
+deaths_drivers2 %>% group_by(insurance_cat) %>% summarize(mean_nd=mean(num_drivers), sd_nd=sd(num_drivers), var_nd=var(num_drivers), quantile_nd=IQR(num_drivers), min_nd=min(num_drivers),med_nd=median(num_drivers), max_nd=max(num_drivers),ndist_nd=n_distinct(num_drivers))
+
+deaths_drivers2$cruderate<-as.numeric(deaths_drivers2$cruderate)
+deaths_drivers2 %>% group_by(insurance_cat) %>% summarize(mean_cr=mean(cruderate), sd_cr=sd(cruderate), var_cr=var(cruderate), quantile_cr=IQR(cruderate), min_cr=min(cruderate),med_cr=median(cruderate), max_cr=max(cruderate),ndist_cr=n_distinct(cruderate))
+
+deaths_drivers2 %>% select(-Year) %>% select_if(is.numeric) %>% cor()
+```
+
+
+## Visualizing
+The first plot is a scatterplot of Drug Deaths vs. Drivers in Fatal Collisions with the color of the points based on percentage of drivers involved in fatal collisions who were alcohol-impaired, and each point is labeled with the corresponding State. There seems to be a slight positive correlation between drug deaths and drivers in fatal collisions. Perhaps people that are heavily dependent on drugs tend to be reckless drivers because drugs impair cognitive function. Furthermore, the states with a higher percent of alcohol induced collisions had a greater number of drivers involved in fatal collisions. Thus, drinking and driving may be linked to a significant increase in the number of car accidents.
+```{r}
+library(ggplot2)
+install.packages("ggrepel")
+library(ggrepel)
+
+ggplot(deaths_drivers2, aes(x=drugdeaths, y=num_drivers, color=perc_alcohol))+geom_point(size=3)+theme_dark()+ggtitle("Drug Deaths vs. Drivers in Fatal Collisions")+ylab("Drivers in Fatal Collisions")+xlab("Drug Deaths")+scale_x_continuous(breaks=seq(0,5000,500))+scale_y_continuous(breaks=seq(0,25,2))+geom_text_repel(aes(label=State), color="white", size=2)
+```
+
+The second plot is a barplot of drug deaths by state with the bars colored according to their insurance category. There is a clear positive relationship between the number of drug deaths and the state's population size. California, Florida, and Texas have the greatest population size and also the highest number of drug deaths. Within the top 5 States of drug deaths, 3 of them (Florida, Texas, and New York) are in the high car insurance category. Drug/alcohol intake is most likely something insurance companies take into consideration when determining premium prices.
+```{r}
+ggplot(deaths_drivers2, aes(x=reorder(State, -drugdeaths), y=drugdeaths, fill=insurance_cat))+geom_bar(stat="summary", fun.y="mean", width=.75)+theme(text = element_text(size=8), axis.text.x=element_text(angle=45, hjust=1))+ggtitle("Drug Deaths by State")+ylab("Drug Deaths")+xlab("State")
+```
+
+The third plot is a barplot of the mean number of drug deaths by insurance categories with error bars. The primary trend of the graph is that the number of drug deaths is highest for the states with high car insurance premiums, followed by medium and then low. People who regularly use drugs may be driving under the influence and are at higher risk for accidents. In states like Florida and Texas, Car insurance companies will increase insurance premiums if there are a greater number of high risk drivers. In essence, premiums in each state reflect the insurance companies' assessment of who is likely to cost them in the future.
+```{r}
+ggplot(deaths_drivers2, aes(x=reorder(insurance_cat, -drugdeaths), y=drugdeaths))+geom_bar(stat="summary", fun.y="mean")+geom_errorbar(stat="summary")+ggtitle("Drug Deaths by Insurance Category")+ylab("Drug Deaths")+xlab("Insurance Category")
+```
+
+## Dimensionality Reduction
+I ran a principal component analysis for all the numeric variables of the combined dataset. When looking at the loadings of PC1, drugdeaths and Population are correlated and fatal_rate and num_alc are correlated. Bigger states seem to have more drug deaths and states with a greater number of alcohol related collisions have a higher fatal collision rate. The loadings of PC2 appear to have no significant correlation and the values are mostly arbitrary. In the loadings of PC3, crude rate of drug deaths and car insurance premiums are correlated, possibly because drug use is related to reckless driving.
+
+```{r}
+deaths_drivers3 <- deaths_drivers2 %>% select(-Year) %>% select_if(is.numeric) %>% scale()
+rownames(deaths_drivers3)<-deaths_drivers2$State
+data_pca<-princomp(deaths_drivers3)
+names(data_pca)
+
+summary(data_pca, loadings=T)
+
+eigval<-data_pca$sdev^2 #square to convert SDs to eigenvalues
+varprop=round(eigval/sum(eigval),2) #proportion of var explained by each PC
+
+#Scree plot: How many components to keep?
+ggplot()+geom_bar(aes(y=varprop,x=1:12),stat="identity")+xlab("")+geom_path(aes(y=varprop,x=1:12))+
+  geom_text(aes(x=1:12,y=varprop,label=round(varprop,2)),vjust=1,col="white",size=5)+
+  scale_y_continuous(breaks=seq(0,.6,.2),labels = scales::percent)+
+  scale_x_continuous(breaks=1:12)
+
+round(cumsum(eigval)/sum(eigval),2) #cumulative proportion of variance
+eigval #eigenvalues
+
+eigen(cor(deaths_drivers3))
+```
+Due to arbitrary relationships, I had difficulty interpreting the PC score plots.
+According to the PC1 vs. PC2 plot, the disparities in drug deaths and Population between the extremes are evident. States with higher population size have more drug deaths. PC2 did not have any apparent correlations.
+According to the PC3 vs. PC4 plot, the disparities in crude rate of drug deaths and insurance premiums is apparent. States with higher crude rates have higher insurance premiums. PC4 did not have any apparent correlations.
+```{r}
+datadf<-data.frame(PC1=data_pca$scores[,1], PC2=data_pca$scores[,2], State=deaths_drivers2$State)
+ggplot(datadf,aes(PC1, PC2))+geom_point()+geom_text_repel(aes(label=State), size=2)
+
+State<-deaths_drivers2$State
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,Comp.1) #highest on PC1
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=desc(Comp.1)) #lowest on PC1
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=Comp.2) #highest on PC2
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=desc(Comp.2)) #lowest on PC2
+
+deaths_drivers2%>%filter(State%in%c("North Dakota", "South Dakota", "Montana"))
+deaths_drivers2%>%filter(State%in%c("New Jersey", "New York", "California"))
+
+
+datadf2<-data.frame(PC3=data_pca$scores[,3], PC4=data_pca$scores[,4], State=deaths_drivers2$State)
+ggplot(datadf2,aes(PC3, PC4))+geom_point()+geom_text_repel(aes(label=State), size=2)
+
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,Comp.3) #highest on PC3
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=desc(Comp.3)) #lowest on PC3
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=Comp.4) #highest on PC4
+data_pca$scores%>%as.data.frame%>%cbind(State,.)%>%top_n(3,wt=desc(Comp.4)) #lowest on PC4
+
+deaths_drivers2%>%filter(State%in%c("Delaware", "West Virginia", "Louisiana"))
+deaths_drivers2%>%filter(State%in%c("Iowa", "Minnesota", "California"))
+```
+
+The plot of loadings shows that drug deaths and population have a small angle (higher correlation), the number of drivers involved in fatal collisions is correlated with percent speeding and percent alcohol, and insurance premiums is correlated with the losses incurred by insurance companies.
+```{r}
+data_pca$loadings[1:12,1:2]%>%as.data.frame%>%rownames_to_column%>%
+ggplot()+geom_hline(aes(yintercept=0),lty=2)+
+ geom_vline(aes(xintercept=0),lty=2)+ylab("PC2")+xlab("PC1")+
+ geom_segment(aes(x=0,y=0,xend=Comp.1,yend=Comp.2),arrow=arrow(),col="red")+
+ geom_label(aes(x=Comp.1*1.1,y=Comp.2*1.1,label=rowname))
+```
+
