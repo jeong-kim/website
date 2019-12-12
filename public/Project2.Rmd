@@ -1,0 +1,243 @@
+---
+title: "Project 2"
+author: "Jeong Kim"
+date: "11/19/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Introduction
+*The suicide dataset provides a statistical overview of suicide rates by year and country along with their corresponding socio-economic information. There are 9 variables with 900 observations (for the year 2014). The variables are country, year, sex, age category, population, suicide count, suicides per 100k population, HDI for year = human development index (index of life expectancy, education, and well-being), GDP per capita, and generation (Millenials, X, Y, Boomers, and Silent).*
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
+
+suicide <- read_csv("suicide.csv")
+suicide <- suicide %>% filter(year=="2014") %>% select(-"country-year", -"year",-"gdp_for_year ($)") %>% na.omit() %>% rename("HDIforyear"="HDI for year", "gdppercapita"="gdp_per_capita ($)", "suicidesper100k"="suicides/100k pop")
+
+suicide$country<-as.factor(suicide$country)
+suicide$age<-as.factor(suicide$age)
+suicide$generation<-as.factor(suicide$generation)
+suicide$suicides_no<-as.numeric(suicide$suicides_no)
+suicide$sex<-as.factor(suicide$sex)
+suicide3<-suicide
+```
+
+## MANOVA Testing
+```{r}
+man1<-manova(cbind(suicides_no, population)~generation, data=suicide)
+summary(man1)
+
+summary.aov(man1)
+pairwise.t.test(suicide$suicides_no,suicide$generation, p.adj="none")
+pairwise.t.test(suicide$population,suicide$generation, p.adj="none")
+
+#Type 1 error
+1-.95^23
+
+#Bonferroni adjustment
+.05/23
+
+ggplot(suicide, aes(x=suicides_no,y=population))+geom_point(alpha=.5)+geom_density_2d(h=2)+facet_wrap(~generation)
+```
+*I performed 1 MANOVA, 2 ANOVA, 20 t-tests for a total of 23 tests. The probability of at least one type I error is .693. The bonferroni adjusted significance level is .00217.*
+
+*A one-way MANOVA was conducted to determine the effect of the generation (Millenials, X, Y, Boomers, and Silent) on two dependent variables (suicide count and population). Significant differences were found among the generations on the two dependent measures, univariate ANOVAs for each dependent variable were conducted as follow-up tests to the MANOVA, using the Bonferroni method for controlling Type I error rates for multiple comparisons. The univariate ANOVAs for both suicide count and population were significant. Post hoc analysis was performed conducting pairwise comparisons to determine which generations differed in suicide count and population. After adjusting for multiple comparisons, GenZ and Boomers, GenX and GenY, GenX and Millenials, and GenX and Silent differ significantly from each other in terms of suicide count. Boomers and Silent, GenX and GenZ, GenX and Millenials, and GenX and Silent differ significantly from each other in terms of population.*
+
+*Independent observations and random samples were met. Examination of bivariate density plots for each group revealed some departures from multivariate normality. Some univariate or multivariate outliers were evident. MANOVA assumptions are usually hard to meet, so they are not likely to have been met.*
+
+## Randomization Test
+```{r}
+mill_suicide <- suicide %>% select(suicides_no, generation) %>% filter(generation=="Millenials")
+boom_suicide <- suicide %>% select(suicides_no, generation) %>% filter(generation=="Boomers")
+
+millenials<-c(mill_suicide$suicides_no)
+boomers<-c(boom_suicide$suicides_no)
+suicide2<-data.frame(generation=c(rep("Millenials"), rep("Boomers")),suicides_no=c(millenials,boomers))
+
+suicide2 %>% group_by(generation) %>% summarize(means=mean(suicides_no, na.rm=T)) %>% summarize(diff(means))
+
+rand_dist<-vector()
+for(i in 1:5000){
+new<-data.frame(suicides_no=sample(suicide2$suicides_no),generation=suicide2$generation)
+rand_dist[i]<-mean(new[new$generation=="Millenials",]$suicides_no, na.rm=T)-mean(new[new$generation=="Boomers",]$suicides_no, na.rm=T)
+}
+
+hist(rand_dist,main="",ylab=""); abline(v = 151.2089,col="red")
+
+mean(rand_dist>151.2089)*2
+```
+*The null hypothesis is the mean suicide count is the same for Boomers and Millenials. The alternative hypothesis is the mean suicide count is different for Boomers and Millenials. With p-value=.0084 less than signifance level=.05, we reject the null hypothesis. There is a significant difference in mean suicide count between Boomers and Millenials.*
+
+## Linear Regression Model
+```{r}
+library(sandwich); library(MASS); library(lmtest); library(plotROC); library(glmnet)
+
+suicide$gdppercapita_c<-suicide$gdppercapita-mean(suicide$gdppercapita)
+suicide3$gdppercapita_c<-suicide3$gdppercapita-mean(suicide3$gdppercapita)
+
+fit<-lm(suicidesper100k~generation*gdppercapita_c, data=suicide)
+summary(fit)
+
+ggplot(suicide, aes(x=gdppercapita_c, y=suicidesper100k, group=generation))+geom_point(aes(color=generation))+geom_smooth(method="lm",se=F,fullrange=T,aes(color=generation))+theme(legend.position=c(.9,.19))+scale_y_continuous(trans="log10")
+
+#Assumptions
+resids<-fit$residuals
+fitvals<-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+ggplot()+geom_histogram(aes(resids), bins=20)
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line()
+
+coeftest(fit, vcov=vcovHC(fit))
+
+
+fit<-lm(suicidesper100k~generation+gdppercapita_c, data=suicide)
+summary(fit)
+```
+*The coefficient of the intercept represents that if the gdppercapita_c is 0 and the generation is Boomer, then the suicides per 100k is 13.317. The coefficient of Generation Z shows that if the population is genZ, then the suicides per 100k decreases by 12.674. The coefficient of Millenials shows that if they are Millenials, then suicides per 100k decreases by 4.3101. The coefficient of Silent shows that if they are generation Silent, then suicides per 100k increases by 6.296. Independent observations and random samples are met. After examining the residual plot, histogram, and qq plot, linearity, normality, and homoskedasticity are not met. 15.84% (R-squared) of the variation in the outcomes is explained by the model. After rerunning the regression with robust SEs, the same variables were significant as before. The coefficients for all significant factors remained the same as before.*
+
+## Regression Model w/ Interaction and Bootstrapped SE
+```{r}
+set.seed(1234)
+samp_distn<-replicate(5000,{
+ boot_dat<-suicide[sample(nrow(suicide),replace=TRUE),]
+ fit2<-lm(suicidesper100k~generation*gdppercapita_c,data=boot_dat)
+ coef(fit2)
+})
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+```
+*The p-values were similar to that of the original linear model. The bootstrapped standard errors from the resampling methods are pretty similar to the original standard errors for all generation categories. Thus, with these bootstrapped SEs, we still reject the null hypothesis for the same significant variables.*
+
+
+## Logistic Regression
+```{r}
+suicide<-suicide %>% mutate(y=ifelse(sex=="male",1,0))
+fit<-glm(y~suicidesper100k+HDIforyear,data=suicide,family=binomial(link="logit"))
+coeftest(fit)
+exp(coef(fit))
+
+#Confusion Matrix
+prob<-predict(fit, type="response")
+table(truth=suicide$y,predict=as.numeric(prob>.5))%>%addmargins
+
+#Accuracy
+(171+76)/900
+#Sensitivity
+76/450
+#Specificity
+171/450
+#Precision
+76/355
+
+#Density plot of logit
+suicide$logit<-predict(fit)
+suicide$sex<-factor(suicide$sex,levels=c("male","female"))
+ggplot(suicide,aes(logit, fill=sex))+geom_density(alpha=.3)+geom_vline(xintercept=0,lty=2)
+
+#ROC
+suicide$prob<-predict(fit,type="response")
+ROCplot<-ggplot(suicide)+geom_roc(aes(d=y,m=prob), n.cuts=0)
+ROCplot
+calc_auc(ROCplot)
+
+#CV
+set.seed(1234)
+k=10
+
+data1<-suicide[sample(nrow(suicide)),]
+folds<-cut(seq(1:nrow(suicide)),breaks=k,labels=F)
+
+diags<-NULL
+for(i in 1:k){
+  train<-data1[folds!=i,]
+  test<-data1[folds==i,]
+  truth<-test$sex
+
+  fit<-glm(y~suicidesper100k+HDIforyear,data=train,family="binomial")
+  probs<-predict(fit, newdata=test,type="response")
+  diags<-rbind(diags,class_diag(probs,truth)) 
+}
+
+apply(diags,2,mean)
+```
+*For every 1 unit increase in suicides per 100k, the odds of the population being male is multiplied by 1.154. For every 1 unit increase in the HDI for year, the odds of the population being male is multiplied by .0392. If the suicides per 100k is 0 and HDI is 0, then the odds of the population being male is 4.247. For the logistic regression, the accuracy is .274, sensitivity (TPR) is .169, specificity (TNR) is .38, and precision (PPV) is .214. The AUC (area under curve) of the ROC plot is .753, which is fair. After running the 10-fold CV, the accuracy is .253, sensitivity is .138, specificity is .364, precision is .181, and AUC is .245, which is bad. Since the model performed poorly in cross-validation, there are signs of overfitting.*
+
+## LASSO Regression
+```{r}
+fit<-glm(suicidesper100k~-1+sex+age+HDIforyear+generation+gdppercapita_c, data=suicide3)
+x<-model.matrix(fit)
+x<-scale(x)
+y<-as.matrix(suicide$suicidesper100k)
+
+
+cv<-cv.glmnet(x,y)
+lasso<-glmnet(x,y,lambda=cv$lambda.1se)
+coef(lasso)
+
+set.seed(1234)
+k=10
+
+suicide3$sexmale<-ifelse(suicide3$sex=="male",1,0)
+suicide3$age5to14<-ifelse(suicide3$age=="5-14 years",1,0)
+suicide3$age75plus<-ifelse(suicide3$age=="75+ years",1,0)
+suicide3$Millenials<-ifelse(suicide3$generation=="Millenials",1,0)
+
+data1<-suicide3[sample(nrow(suicide3)),]
+folds<-cut(seq(1:nrow(suicide3)),breaks=k,labels=F)
+
+diags<-NULL
+for(i in 1:k){
+ train<-data1[folds!=i,]
+ test<-data1[folds==i,]
+ truth<-test$suicidesper100k
+ fit<-glm(suicidesper100k~sexmale+age5to14+age75plus+HDIforyear+Millenials, data=train)
+ probs<-predict(fit,newdata = test,type="response")
+ preds<-ifelse(probs>.5,1,0)
+ diags<-rbind(diags,class_diag(probs,truth))
+}
+diags%>%summarize_all(mean)
+
+hi<-lm(suicidesper100k~sexmale+age5to14+age75plus+HDIforyear+Millenials, data=train)
+summary(hi)
+```
+*Both genders female and male, ages 5-14, ages 75+, and HDIforyear are the variables that were retained. After running the 10-fold CV of the Lasso regression, the AUC was .817 which is good. The residual standard error of the regression model is 11.48 which is less than that of the original linear regression model which was 13.34.*

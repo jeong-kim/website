@@ -1,0 +1,461 @@
+---
+title: "Project 2"
+author: "Jeong Kim"
+date: "11/19/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
+<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p><em>The suicide dataset provides a statistical overview of suicide rates by year and country along with their corresponding socio-economic information. There are 9 variables with 900 observations (for the year 2014). The variables are country, year, sex, age category, population, suicide count, suicides per 100k population, HDI for year = human development index (index of life expectancy, education, and well-being), GDP per capita, and generation (Millenials, X, Y, Boomers, and Silent).</em></p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ---------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v tibble  2.1.3     v purrr   0.3.2
+## v tidyr   1.0.0     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.4.0</code></pre>
+<pre><code>## -- Conflicts ------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tidyr)
+
+suicide &lt;- read_csv(&quot;suicide.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   country = col_character(),
+##   year = col_double(),
+##   sex = col_character(),
+##   age = col_character(),
+##   suicides_no = col_double(),
+##   population = col_double(),
+##   `suicides/100k pop` = col_double(),
+##   `country-year` = col_character(),
+##   `HDI for year` = col_double(),
+##   `gdp_for_year ($)` = col_number(),
+##   `gdp_per_capita ($)` = col_double(),
+##   generation = col_character()
+## )</code></pre>
+<pre><code>## Warning: 1 parsing failure.
+##   row  col expected actual          file
+## 20602 year a double      s &#39;suicide.csv&#39;</code></pre>
+<pre class="r"><code>suicide &lt;- suicide %&gt;% filter(year==&quot;2014&quot;) %&gt;% select(-&quot;country-year&quot;, -&quot;year&quot;,-&quot;gdp_for_year ($)&quot;) %&gt;% na.omit() %&gt;% rename(&quot;HDIforyear&quot;=&quot;HDI for year&quot;, &quot;gdppercapita&quot;=&quot;gdp_per_capita ($)&quot;, &quot;suicidesper100k&quot;=&quot;suicides/100k pop&quot;)
+
+suicide$country&lt;-as.factor(suicide$country)
+suicide$age&lt;-as.factor(suicide$age)
+suicide$generation&lt;-as.factor(suicide$generation)
+suicide$suicides_no&lt;-as.numeric(suicide$suicides_no)
+suicide$sex&lt;-as.factor(suicide$sex)
+suicide3&lt;-suicide</code></pre>
+</div>
+<div id="manova-testing" class="section level2">
+<h2>MANOVA Testing</h2>
+<pre class="r"><code>man1&lt;-manova(cbind(suicides_no, population)~generation, data=suicide)
+summary(man1)</code></pre>
+<pre><code>##             Df   Pillai approx F num Df den Df    Pr(&gt;F)    
+## generation   4 0.064651   7.4744      8   1790 7.601e-10 ***
+## Residuals  895                                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>##  Response suicides_no :
+##              Df    Sum Sq Mean Sq F value    Pr(&gt;F)    
+## generation    4  16333565 4083391  8.5602 8.834e-07 ***
+## Residuals   895 426931378  477018                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response population :
+##              Df     Sum Sq    Mean Sq F value    Pr(&gt;F)    
+## generation    4 5.2959e+14 1.3240e+14  7.7487 3.864e-06 ***
+## Residuals   895 1.5292e+16 1.7086e+13                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>pairwise.t.test(suicide$suicides_no,suicide$generation, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  suicide$suicides_no and suicide$generation 
+## 
+##              Boomers Generation X Generation Z Millenials
+## Generation X 0.18206 -            -            -         
+## Generation Z 0.00011 2.3e-07      -            -         
+## Millenials   0.02053 0.00012      0.03130      -         
+## Silent       0.02095 0.00028      0.11807      0.72628   
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(suicide$population,suicide$generation, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  suicide$population and suicide$generation 
+## 
+##              Boomers Generation X Generation Z Millenials
+## Generation X 0.02285 -            -            -         
+## Generation Z 0.23202 0.00053      -            -         
+## Millenials   0.28007 0.00022      0.76409      -         
+## Silent       0.00196 9.2e-08      0.05652      0.01242   
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>#Type 1 error
+1-.95^23</code></pre>
+<pre><code>## [1] 0.6926431</code></pre>
+<pre class="r"><code>#Bonferroni adjustment
+.05/23</code></pre>
+<pre><code>## [1] 0.002173913</code></pre>
+<pre class="r"><code>ggplot(suicide, aes(x=suicides_no,y=population))+geom_point(alpha=.5)+geom_density_2d(h=2)+facet_wrap(~generation)</code></pre>
+<pre><code>## Warning: Not possible to generate contour data
+
+## Warning: Not possible to generate contour data
+
+## Warning: Not possible to generate contour data</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+<em>I performed 1 MANOVA, 2 ANOVA, 20 t-tests for a total of 23 tests. The probability of at least one type I error is .693. The bonferroni adjusted significance level is .00217.</em></p>
+<p><em>A one-way MANOVA was conducted to determine the effect of the generation (Millenials, X, Y, Boomers, and Silent) on two dependent variables (suicide count and population). Significant differences were found among the generations on the two dependent measures, univariate ANOVAs for each dependent variable were conducted as follow-up tests to the MANOVA, using the Bonferroni method for controlling Type I error rates for multiple comparisons. The univariate ANOVAs for both suicide count and population were significant. Post hoc analysis was performed conducting pairwise comparisons to determine which generations differed in suicide count and population. After adjusting for multiple comparisons, GenZ and Boomers, GenX and GenY, GenX and Millenials, and GenX and Silent differ significantly from each other in terms of suicide count. Boomers and Silent, GenX and GenZ, GenX and Millenials, and GenX and Silent differ significantly from each other in terms of population.</em></p>
+<p><em>Independent observations and random samples were met. Examination of bivariate density plots for each group revealed some departures from multivariate normality. Some univariate or multivariate outliers were evident. MANOVA assumptions are usually hard to meet, so they are not likely to have been met.</em></p>
+</div>
+<div id="randomization-test" class="section level2">
+<h2>Randomization Test</h2>
+<pre class="r"><code>mill_suicide &lt;- suicide %&gt;% select(suicides_no, generation) %&gt;% filter(generation==&quot;Millenials&quot;)
+boom_suicide &lt;- suicide %&gt;% select(suicides_no, generation) %&gt;% filter(generation==&quot;Boomers&quot;)
+
+millenials&lt;-c(mill_suicide$suicides_no)
+boomers&lt;-c(boom_suicide$suicides_no)
+suicide2&lt;-data.frame(generation=c(rep(&quot;Millenials&quot;), rep(&quot;Boomers&quot;)),suicides_no=c(millenials,boomers))
+
+suicide2 %&gt;% group_by(generation) %&gt;% summarize(means=mean(suicides_no, na.rm=T)) %&gt;% summarize(diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `diff(means)`
+##           &lt;dbl&gt;
+## 1          151.</code></pre>
+<pre class="r"><code>rand_dist&lt;-vector()
+for(i in 1:5000){
+new&lt;-data.frame(suicides_no=sample(suicide2$suicides_no),generation=suicide2$generation)
+rand_dist[i]&lt;-mean(new[new$generation==&quot;Millenials&quot;,]$suicides_no, na.rm=T)-mean(new[new$generation==&quot;Boomers&quot;,]$suicides_no, na.rm=T)
+}
+
+hist(rand_dist,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = 151.2089,col=&quot;red&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>mean(rand_dist&gt;151.2089)*2</code></pre>
+<pre><code>## [1] 0.0112</code></pre>
+<p><em>The null hypothesis is the mean suicide count is the same for Boomers and Millenials. The alternative hypothesis is the mean suicide count is different for Boomers and Millenials. With p-value=.0084 less than signifance level=.05, we reject the null hypothesis. There is a significant difference in mean suicide count between Boomers and Millenials.</em></p>
+</div>
+<div id="linear-regression-model" class="section level2">
+<h2>Linear Regression Model</h2>
+<pre class="r"><code>library(sandwich); library(MASS); library(lmtest); library(plotROC); library(glmnet)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;MASS&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     select</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:tidyr&#39;:
+## 
+##     expand, pack, unpack</code></pre>
+<pre><code>## Loaded glmnet 3.0-1</code></pre>
+<pre class="r"><code>suicide$gdppercapita_c&lt;-suicide$gdppercapita-mean(suicide$gdppercapita)
+suicide3$gdppercapita_c&lt;-suicide3$gdppercapita-mean(suicide3$gdppercapita)
+
+fit&lt;-lm(suicidesper100k~generation*gdppercapita_c, data=suicide)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = suicidesper100k ~ generation * gdppercapita_c, data = suicide)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -21.696  -7.536  -1.924   2.167  72.125 
+## 
+## Coefficients:
+##                                         Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                            1.332e+01  1.091e+00  12.206  &lt; 2e-16
+## generationGeneration X                -1.001e+00  1.543e+00  -0.649   0.5165
+## generationGeneration Z                -1.267e+01  1.543e+00  -8.214  7.5e-16
+## generationMillenials                  -4.310e+00  1.336e+00  -3.226   0.0013
+## generationSilent                       6.296e+00  1.543e+00   4.080  4.9e-05
+## gdppercapita_c                         5.018e-05  4.089e-05   1.227   0.2201
+## generationGeneration X:gdppercapita_c -1.300e-05  5.783e-05  -0.225   0.8221
+## generationGeneration Z:gdppercapita_c -5.433e-05  5.783e-05  -0.940   0.3477
+## generationMillenials:gdppercapita_c   -4.535e-05  5.008e-05  -0.906   0.3654
+## generationSilent:gdppercapita_c       -1.766e-05  5.783e-05  -0.305   0.7601
+##                                          
+## (Intercept)                           ***
+## generationGeneration X                   
+## generationGeneration Z                ***
+## generationMillenials                  ** 
+## generationSilent                      ***
+## gdppercapita_c                           
+## generationGeneration X:gdppercapita_c    
+## generationGeneration Z:gdppercapita_c    
+## generationMillenials:gdppercapita_c      
+## generationSilent:gdppercapita_c          
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 13.36 on 890 degrees of freedom
+## Multiple R-squared:  0.1584, Adjusted R-squared:  0.1498 
+## F-statistic: 18.61 on 9 and 890 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>ggplot(suicide, aes(x=gdppercapita_c, y=suicidesper100k, group=generation))+geom_point(aes(color=generation))+geom_smooth(method=&quot;lm&quot;,se=F,fullrange=T,aes(color=generation))+theme(legend.position=c(.9,.19))+scale_y_continuous(trans=&quot;log10&quot;)</code></pre>
+<pre><code>## Warning: Transformation introduced infinite values in continuous y-axis
+
+## Warning: Transformation introduced infinite values in continuous y-axis</code></pre>
+<pre><code>## Warning: Removed 114 rows containing non-finite values (stat_smooth).</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#Assumptions
+resids&lt;-fit$residuals
+fitvals&lt;-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color=&#39;red&#39;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<pre class="r"><code>ggplot()+geom_histogram(aes(resids), bins=20)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
+<pre class="r"><code>ggplot()+geom_qq(aes(sample=resids))+geom_qq_line()</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-4.png" width="672" /></p>
+<pre class="r"><code>coeftest(fit, vcov=vcovHC(fit))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                                          Estimate  Std. Error  t value
+## (Intercept)                            1.3317e+01  1.1188e+00  11.9025
+## generationGeneration X                -1.0015e+00  1.5238e+00  -0.6572
+## generationGeneration Z                -1.2674e+01  1.1216e+00 -11.3002
+## generationMillenials                  -4.3101e+00  1.2431e+00  -3.4672
+## generationSilent                       6.2960e+00  2.2267e+00   2.8275
+## gdppercapita_c                         5.0182e-05  3.5496e-05   1.4138
+## generationGeneration X:gdppercapita_c -1.3004e-05  4.7399e-05  -0.2744
+## generationGeneration Z:gdppercapita_c -5.4330e-05  3.5671e-05  -1.5231
+## generationMillenials:gdppercapita_c   -4.5348e-05  3.8918e-05  -1.1652
+## generationSilent:gdppercapita_c       -1.7662e-05  6.8687e-05  -0.2571
+##                                        Pr(&gt;|t|)    
+## (Intercept)                           &lt; 2.2e-16 ***
+## generationGeneration X                0.5112061    
+## generationGeneration Z                &lt; 2.2e-16 ***
+## generationMillenials                  0.0005511 ***
+## generationSilent                      0.0047963 ** 
+## gdppercapita_c                        0.1577837    
+## generationGeneration X:gdppercapita_c 0.7838690    
+## generationGeneration Z:gdppercapita_c 0.1280933    
+## generationMillenials:gdppercapita_c   0.2442439    
+## generationSilent:gdppercapita_c       0.7971329    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>fit&lt;-lm(suicidesper100k~generation+gdppercapita_c, data=suicide)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = suicidesper100k ~ generation + gdppercapita_c, data = suicide)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -20.951  -7.439  -2.094   2.362  72.008 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)             1.332e+01  1.089e+00  12.223  &lt; 2e-16 ***
+## generationGeneration X -1.001e+00  1.541e+00  -0.650  0.51587    
+## generationGeneration Z -1.267e+01  1.541e+00  -8.226 6.80e-16 ***
+## generationMillenials   -4.310e+00  1.334e+00  -3.230  0.00128 ** 
+## generationSilent        6.296e+00  1.541e+00   4.086 4.78e-05 ***
+## gdppercapita_c          2.090e-05  1.667e-05   1.254  0.21025    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 13.34 on 894 degrees of freedom
+## Multiple R-squared:  0.157,  Adjusted R-squared:  0.1523 
+## F-statistic:  33.3 on 5 and 894 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p><em>The coefficient of the intercept represents that if the gdppercapita_c is 0 and the generation is Boomer, then the suicides per 100k is 13.317. The coefficient of Generation Z shows that if the population is genZ, then the suicides per 100k decreases by 12.674. The coefficient of Millenials shows that if they are Millenials, then suicides per 100k decreases by 4.3101. The coefficient of Silent shows that if they are generation Silent, then suicides per 100k increases by 6.296. Independent observations and random samples are met. After examining the residual plot, histogram, and qq plot, linearity, normality, and homoskedasticity are not met. 15.84% (R-squared) of the variation in the outcomes is explained by the model. After rerunning the regression with robust SEs, the same variables were significant as before. The coefficients for all significant factors remained the same as before.</em></p>
+</div>
+<div id="regression-model-w-interaction-and-bootstrapped-se" class="section level2">
+<h2>Regression Model w/ Interaction and Bootstrapped SE</h2>
+<pre class="r"><code>set.seed(1234)
+samp_distn&lt;-replicate(5000,{
+ boot_dat&lt;-suicide[sample(nrow(suicide),replace=TRUE),]
+ fit2&lt;-lm(suicidesper100k~generation*gdppercapita_c,data=boot_dat)
+ coef(fit2)
+})
+samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) generationGeneration X generationGeneration Z
+## 1    1.122255               1.516717               1.126311
+##   generationMillenials generationSilent gdppercapita_c
+## 1             1.242047         2.223549   3.390612e-05
+##   generationGeneration X:gdppercapita_c generationGeneration Z:gdppercapita_c
+## 1                          4.615033e-05                          3.404061e-05
+##   generationMillenials:gdppercapita_c generationSilent:gdppercapita_c
+## 1                        3.748479e-05                    6.879644e-05</code></pre>
+<p><em>The p-values were similar to that of the original linear model. The bootstrapped standard errors from the resampling methods are pretty similar to the original standard errors for all generation categories. Thus, with these bootstrapped SEs, we still reject the null hypothesis for the same significant variables.</em></p>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>Logistic Regression</h2>
+<pre class="r"><code>suicide&lt;-suicide %&gt;% mutate(y=ifelse(sex==&quot;male&quot;,1,0))
+fit&lt;-glm(y~suicidesper100k+HDIforyear,data=suicide,family=binomial(link=&quot;logit&quot;))
+coeftest(fit)</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                  Estimate Std. Error z value  Pr(&gt;|z|)    
+## (Intercept)      1.446138   0.753901  1.9182 0.0550848 .  
+## suicidesper100k  0.143570   0.012268 11.7029 &lt; 2.2e-16 ***
+## HDIforyear      -3.239453   0.952437 -3.4012 0.0006708 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coef(fit))</code></pre>
+<pre><code>##     (Intercept) suicidesper100k      HDIforyear 
+##      4.24668093      1.15438759      0.03918533</code></pre>
+<pre class="r"><code>#Confusion Matrix
+prob&lt;-predict(fit, type=&quot;response&quot;)
+table(truth=suicide$y,predict=as.numeric(prob&gt;.5))%&gt;%addmargins</code></pre>
+<pre><code>##      predict
+## truth   0   1 Sum
+##   0   386  64 450
+##   1   166 284 450
+##   Sum 552 348 900</code></pre>
+<pre class="r"><code>#Accuracy
+(171+76)/900</code></pre>
+<pre><code>## [1] 0.2744444</code></pre>
+<pre class="r"><code>#Sensitivity
+76/450</code></pre>
+<pre><code>## [1] 0.1688889</code></pre>
+<pre class="r"><code>#Specificity
+171/450</code></pre>
+<pre><code>## [1] 0.38</code></pre>
+<pre class="r"><code>#Precision
+76/355</code></pre>
+<pre><code>## [1] 0.2140845</code></pre>
+<pre class="r"><code>#Density plot of logit
+suicide$logit&lt;-predict(fit)
+suicide$sex&lt;-factor(suicide$sex,levels=c(&quot;male&quot;,&quot;female&quot;))
+ggplot(suicide,aes(logit, fill=sex))+geom_density(alpha=.3)+geom_vline(xintercept=0,lty=2)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>#ROC
+suicide$prob&lt;-predict(fit,type=&quot;response&quot;)
+ROCplot&lt;-ggplot(suicide)+geom_roc(aes(d=y,m=prob), n.cuts=0)
+ROCplot</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.7528914</code></pre>
+<pre class="r"><code>#CV
+set.seed(1234)
+k=10
+
+data1&lt;-suicide[sample(nrow(suicide)),]
+folds&lt;-cut(seq(1:nrow(suicide)),breaks=k,labels=F)
+
+diags&lt;-NULL
+for(i in 1:k){
+  train&lt;-data1[folds!=i,]
+  test&lt;-data1[folds==i,]
+  truth&lt;-test$sex
+
+  fit&lt;-glm(y~suicidesper100k+HDIforyear,data=train,family=&quot;binomial&quot;)
+  probs&lt;-predict(fit, newdata=test,type=&quot;response&quot;)
+  diags&lt;-rbind(diags,class_diag(probs,truth)) 
+}
+
+apply(diags,2,mean)</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.2566667 0.1440791 0.3658573 0.1869630 0.2497993</code></pre>
+<p><em>For every 1 unit increase in suicides per 100k, the odds of the population being male is multiplied by 1.154. For every 1 unit increase in the HDI for year, the odds of the population being male is multiplied by .0392. If the suicides per 100k is 0 and HDI is 0, then the odds of the population being male is 4.247. For the logistic regression, the accuracy is .274, sensitivity (TPR) is .169, specificity (TNR) is .38, and precision (PPV) is .214. The AUC (area under curve) of the ROC plot is .753, which is fair. After running the 10-fold CV, the accuracy is .253, sensitivity is .138, specificity is .364, precision is .181, and AUC is .245, which is bad. Since the model performed poorly in cross-validation, there are signs of overfitting.</em></p>
+</div>
+<div id="lasso-regression" class="section level2">
+<h2>LASSO Regression</h2>
+<pre class="r"><code>fit&lt;-glm(suicidesper100k~-1+sex+age+HDIforyear+generation+gdppercapita_c, data=suicide3)
+x&lt;-model.matrix(fit)
+x&lt;-scale(x)
+y&lt;-as.matrix(suicide$suicidesper100k)
+
+
+cv&lt;-cv.glmnet(x,y)
+lasso&lt;-glmnet(x,y,lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 14 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                                   s0
+## (Intercept)             1.065010e+01
+## sexfemale              -5.056201e+00
+## sexmale                 1.334431e-12
+## age25-34 years          .           
+## age35-54 years          .           
+## age5-14 years          -2.758651e+00
+## age55-74 years          .           
+## age75+ years            2.133282e+00
+## HDIforyear              7.989969e-01
+## generationGeneration X  .           
+## generationGeneration Z  .           
+## generationMillenials   -5.152103e-02
+## generationSilent        9.184352e-05
+## gdppercapita_c          .</code></pre>
+<pre class="r"><code>set.seed(1234)
+k=10
+
+suicide3$sexmale&lt;-ifelse(suicide3$sex==&quot;male&quot;,1,0)
+suicide3$age5to14&lt;-ifelse(suicide3$age==&quot;5-14 years&quot;,1,0)
+suicide3$age75plus&lt;-ifelse(suicide3$age==&quot;75+ years&quot;,1,0)
+suicide3$Millenials&lt;-ifelse(suicide3$generation==&quot;Millenials&quot;,1,0)
+
+data1&lt;-suicide3[sample(nrow(suicide3)),]
+folds&lt;-cut(seq(1:nrow(suicide3)),breaks=k,labels=F)
+
+diags&lt;-NULL
+for(i in 1:k){
+ train&lt;-data1[folds!=i,]
+ test&lt;-data1[folds==i,]
+ truth&lt;-test$suicidesper100k
+ fit&lt;-glm(suicidesper100k~sexmale+age5to14+age75plus+HDIforyear+Millenials, data=train)
+ probs&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+ preds&lt;-ifelse(probs&gt;.5,1,0)
+ diags&lt;-rbind(diags,class_diag(probs,truth))
+}
+diags%&gt;%summarize_all(mean)</code></pre>
+<pre><code>##          acc sens      spec         ppv       auc
+## 1 0.03555556  0.4 0.2425308 0.005012987 0.8276606</code></pre>
+<pre class="r"><code>hi&lt;-lm(suicidesper100k~sexmale+age5to14+age75plus+HDIforyear+Millenials, data=train)
+summary(hi)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = suicidesper100k ~ sexmale + age5to14 + age75plus + 
+##     HDIforyear + Millenials, data = train)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -26.481  -6.326  -1.382   4.088  67.354 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -13.717      4.151  -3.304 0.000994 ***
+## sexmale       12.259      0.819  14.968  &lt; 2e-16 ***
+## age5to14     -12.046      1.221  -9.863  &lt; 2e-16 ***
+## age75plus      6.661      1.242   5.361 1.08e-07 ***
+## HDIforyear    25.032      5.035   4.972 8.11e-07 ***
+## Millenials    -3.675      1.004  -3.660 0.000269 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 11.65 on 804 degrees of freedom
+## Multiple R-squared:  0.3518, Adjusted R-squared:  0.3477 
+## F-statistic: 87.26 on 5 and 804 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p><em>Both genders female and male, ages 5-14, ages 75+, and HDIforyear are the variables that were retained. After running the 10-fold CV of the Lasso regression, the AUC was .817 which is good. The residual standard error of the regression model is 11.48 which is less than that of the original linear regression model which was 13.34.</em></p>
+</div>

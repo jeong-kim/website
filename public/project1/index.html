@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Jeong Kim" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 1</title>
+    <meta name="generator" content="Hugo 0.60.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1/">Project 1</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="r-markdown" class="section level2">
+<h2>R Markdown</h2>
+<p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
+<p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The first dataset is the bad_drivers dataset from fivethirtyeight, titled “Dear Mona, Which State Has The Worst Drivers?” This dataset provides statistical data about the number of fatal car accidents by each state in 2012. There are 8 variables with 51 observations (one for each state). The variables are state, num_drivers = number of drivers involved in fatal collisions per billion miles, perc_speeding = percentage of drivers involved in fatal collisions who were speeding, perc_alcohol = percentage of drivers involved in fatal collisions who were alcohol-impaired, perc_not_distracted = percentage of drivers involved in fatal collisions who were not distracted, perc_no_previous = percentage of drivers involved in fatal collisions who had not been involved in any previous accidents, insurance_premiums = Car insurance premiums (in dollars), and losses = losses incurred by insurance companies for collisions per insured driver (in dollars). As a fellow driver on the streets, I was interested to see which states have more fatal car accidents and therefore bad drivers.</p>
+<p>The second dataset is the druginduceddeaths dataset from Kaggler. This dataset provides statistical data about the number of drug induced deaths by each state from 1999 to 2015. There are 8 variables with 867 observations. The variables are State, Year, Deaths, Population, Crude Rate (Deaths per 100,000), Crude Rate Lower 95% CI, Crude Rate Upper 95% CI, and Crude Rate Standard Error. I selected this dataset because I was interested in the drug overdose epidemic and how it has grown into a serious problem that public health officials are looking to combat.</p>
+<p>By joining the two datasets, some potential associations I anticipate to see is a positive relationship between the number of drug deaths and the number of drivers involved in fatal collisions. There is a possibility that people who regularly take drugs are more reckless drivers, especially if they are under the influence. Furthermore, larger states should have the most number of drug deaths because they have a greater population size.</p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages ---------------- tidyverse 1.2.1 --</code></pre>
+<pre><code>## v ggplot2 3.2.1     v readr   1.3.1
+## v tibble  2.1.3     v purrr   0.3.2
+## v tidyr   1.0.0     v stringr 1.4.0
+## v ggplot2 3.2.1     v forcats 0.4.0</code></pre>
+<pre><code>## -- Conflicts ------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tidyr)
+
+library(fivethirtyeight)
+data(bad_drivers)
+bad_drivers &lt;- bad_drivers %&gt;% na.omit()
+bad_drivers$state &lt;- as.factor(bad_drivers$state)
+?bad_drivers</code></pre>
+<pre><code>## starting httpd help server ...</code></pre>
+<pre><code>##  done</code></pre>
+<pre class="r"><code>deaths &lt;- read_csv(&quot;druginduceddeaths.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   State = col_character(),
+##   Year = col_double(),
+##   Deaths = col_double(),
+##   Population = col_double(),
+##   `Crude Rate` = col_character(),
+##   `Crude Rate Lower 95% Confidence Interval` = col_double(),
+##   `Crude Rate Upper 95% Confidence Interval` = col_double(),
+##   `Crude Rate Standard Error` = col_double()
+## )</code></pre>
+<pre class="r"><code>deaths &lt;- deaths %&gt;% select(&quot;State&quot;, &quot;Year&quot;, drugdeaths=&quot;Deaths&quot;, &quot;Population&quot;, cruderate=&quot;Crude Rate&quot;) %&gt;% na.omit()
+deaths$State &lt;- as.factor(deaths$State)</code></pre>
+</div>
+<div id="tidying-rearranging-widelong" class="section level2">
+<h2>Tidying: Rearranging Wide/Long</h2>
+<p>Both datasets were already tidy, so they were untidied with pivot_wider and retidied with pivot_longer. For the bad_drivers dataset, the states were made into new columns and the values were the number of drivers in fatal collisions using pivot_wider. When retidied, a column for State and number of drivers in fatal collisions were remade using pivot_longer. For the deaths dataset, the states were the new columns and the values were the corresponding number of drug deaths using pivot_wider. Then, pivot_longer was used to remake the columns for State and drugdeaths. There were several NA values, so I had to use na.omit when retidying them again.</p>
+<pre class="r"><code>glimpse(drivers &lt;- bad_drivers %&gt;% pivot_wider(names_from=&quot;state&quot;, values_from=&quot;num_drivers&quot;))</code></pre>
+<pre><code>## Observations: 51
+## Variables: 57
+## $ perc_speeding          &lt;int&gt; 39, 41, 35, 18, 35, 37, 46, 38, 34, 21, 19, ...
+## $ perc_alcohol           &lt;int&gt; 30, 25, 28, 26, 28, 28, 36, 30, 27, 29, 25, ...
+## $ perc_not_distracted    &lt;int&gt; 96, 90, 84, 94, 91, 79, 87, 87, 100, 92, 95,...
+## $ perc_no_previous       &lt;int&gt; 80, 94, 96, 95, 89, 95, 82, 99, 100, 94, 93,...
+## $ insurance_premiums     &lt;dbl&gt; 784.55, 1053.48, 899.47, 827.34, 878.41, 835...
+## $ losses                 &lt;dbl&gt; 145.08, 133.93, 110.35, 142.39, 165.63, 139....
+## $ Alabama                &lt;dbl&gt; 18.8, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA...
+## $ Alaska                 &lt;dbl&gt; NA, 18.1, NA, NA, NA, NA, NA, NA, NA, NA, NA...
+## $ Arizona                &lt;dbl&gt; NA, NA, 18.6, NA, NA, NA, NA, NA, NA, NA, NA...
+## $ Arkansas               &lt;dbl&gt; NA, NA, NA, 22.4, NA, NA, NA, NA, NA, NA, NA...
+## $ California             &lt;dbl&gt; NA, NA, NA, NA, 12, NA, NA, NA, NA, NA, NA, ...
+## $ Colorado               &lt;dbl&gt; NA, NA, NA, NA, NA, 13.6, NA, NA, NA, NA, NA...
+## $ Connecticut            &lt;dbl&gt; NA, NA, NA, NA, NA, NA, 10.8, NA, NA, NA, NA...
+## $ Delaware               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, 16.2, NA, NA, NA...
+## $ `District of Columbia` &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, 5.9, NA, NA,...
+## $ Florida                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, 17.9, NA...
+## $ Georgia                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 15.6...
+## $ Hawaii                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Idaho                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Illinois               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Indiana                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Iowa                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Kansas                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Kentucky               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Louisiana              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Maine                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Maryland               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Massachusetts          &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Michigan               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Minnesota              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Mississippi            &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Missouri               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Montana                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Nebraska               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Nevada                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Hampshire`        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Jersey`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Mexico`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New York`             &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `North Carolina`       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `North Dakota`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Ohio                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Oklahoma               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Oregon                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Pennsylvania           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `Rhode Island`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `South Carolina`       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `South Dakota`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Tennessee              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Texas                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Utah                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Vermont                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Virginia               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Washington             &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `West Virginia`        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Wisconsin              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Wyoming                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...</code></pre>
+<pre class="r"><code>glimpse(drivers &lt;- drivers %&gt;% pivot_longer(c(7:57), names_to=&quot;state&quot;, values_to=&quot;num_drivers&quot;) %&gt;% na.omit)</code></pre>
+<pre><code>## Observations: 51
+## Variables: 8
+## $ perc_speeding       &lt;int&gt; 39, 41, 35, 18, 35, 37, 46, 38, 34, 21, 19, 54,...
+## $ perc_alcohol        &lt;int&gt; 30, 25, 28, 26, 28, 28, 36, 30, 27, 29, 25, 41,...
+## $ perc_not_distracted &lt;int&gt; 96, 90, 84, 94, 91, 79, 87, 87, 100, 92, 95, 82...
+## $ perc_no_previous    &lt;int&gt; 80, 94, 96, 95, 89, 95, 82, 99, 100, 94, 93, 87...
+## $ insurance_premiums  &lt;dbl&gt; 784.55, 1053.48, 899.47, 827.34, 878.41, 835.50...
+## $ losses              &lt;dbl&gt; 145.08, 133.93, 110.35, 142.39, 165.63, 139.91,...
+## $ state               &lt;chr&gt; &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, &quot;Arkansas&quot;, &quot;Ca...
+## $ num_drivers         &lt;dbl&gt; 18.8, 18.1, 18.6, 22.4, 12.0, 13.6, 10.8, 16.2,...</code></pre>
+<pre class="r"><code>glimpse(deaths2 &lt;- deaths %&gt;% pivot_wider(names_from=&quot;State&quot;, values_from=&quot;drugdeaths&quot;))</code></pre>
+<pre><code>## Observations: 867
+## Variables: 54
+## $ Year                   &lt;dbl&gt; 1999, 2000, 2001, 2002, 2003, 2004, 2005, 20...
+## $ Population             &lt;dbl&gt; 4430141, 4447100, 4467634, 4480089, 4503491,...
+## $ cruderate              &lt;chr&gt; &quot;4.4&quot;, &quot;5.2&quot;, &quot;5.7&quot;, &quot;5.5&quot;, &quot;5.7&quot;, &quot;7.2&quot;, &quot;7...
+## $ Alabama                &lt;dbl&gt; 195, 232, 253, 248, 255, 327, 332, 466, 554,...
+## $ Alaska                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Arizona                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Arkansas               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ California             &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Colorado               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Connecticut            &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Delaware               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `District of Columbia` &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Florida                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Georgia                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Hawaii                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Idaho                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Illinois               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Indiana                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Iowa                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Kansas                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Kentucky               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Louisiana              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Maine                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Maryland               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Massachusetts          &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Michigan               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Minnesota              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Mississippi            &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Missouri               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Montana                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Nebraska               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Nevada                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Hampshire`        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Jersey`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New Mexico`           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `New York`             &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `North Carolina`       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `North Dakota`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Ohio                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Oklahoma               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Oregon                 &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Pennsylvania           &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `Rhode Island`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `South Carolina`       &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `South Dakota`         &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Tennessee              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Texas                  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Utah                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Vermont                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Virginia               &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Washington             &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ `West Virginia`        &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Wisconsin              &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
+## $ Wyoming                &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...</code></pre>
+<pre class="r"><code>glimpse(deaths2 &lt;- deaths2 %&gt;% pivot_longer(c(4:54), names_to=&quot;state&quot;, values_to=&quot;drugdeaths&quot;) %&gt;% na.omit)</code></pre>
+<pre><code>## Observations: 867
+## Variables: 5
+## $ Year       &lt;dbl&gt; 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 20...
+## $ Population &lt;dbl&gt; 4430141, 4447100, 4467634, 4480089, 4503491, 4530729, 45...
+## $ cruderate  &lt;chr&gt; &quot;4.4&quot;, &quot;5.2&quot;, &quot;5.7&quot;, &quot;5.5&quot;, &quot;5.7&quot;, &quot;7.2&quot;, &quot;7.3&quot;, &quot;10.1&quot;,...
+## $ state      &lt;chr&gt; &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;...
+## $ drugdeaths &lt;dbl&gt; 195, 232, 253, 248, 255, 327, 332, 466, 554, 646, 688, 5...</code></pre>
+</div>
+<div id="joiningmerging" class="section level2">
+<h2>Joining/Merging</h2>
+<p>Since the number of observations are equivalent for both datasets, full_join was used which returned all rows and columns from both datasets without dropping anything. There were no cases that were dropped.</p>
+<pre class="r"><code>deaths_drivers &lt;- full_join(deaths, bad_drivers, by=c(&quot;State&quot;=&quot;state&quot;))</code></pre>
+</div>
+<div id="wrangling" class="section level2">
+<h2>Wrangling</h2>
+<p>The merged dataset was filtered with the Year 2012 because the bad_drivers dataset only included data from 2012. I then selected for the variables I wanted to observe and arranged based on descending number of drug deaths. I created a variable called “fatal_rate” which was the number of drivers involved in fatal collisions per 100,000 population and arranged in descending order. I also created another variable that found the number of drivers involved in fatal collisions who were alcohol impaired from the perc_alcohol.</p>
+<pre class="r"><code>glimpse(deaths_drivers %&gt;% filter(Year==&quot;2012&quot;))</code></pre>
+<pre><code>## Observations: 51
+## Variables: 12
+## $ State               &lt;fct&gt; Alabama, Alaska, Arizona, Arkansas, California,...
+## $ Year                &lt;dbl&gt; 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012,...
+## $ drugdeaths          &lt;dbl&gt; 632, 132, 1206, 398, 4304, 826, 451, 150, 85, 2...
+## $ Population          &lt;dbl&gt; 4822023, 731449, 6553255, 2949131, 38041430, 51...
+## $ cruderate           &lt;chr&gt; &quot;13.1&quot;, &quot;18&quot;, &quot;18.4&quot;, &quot;13.5&quot;, &quot;11.3&quot;, &quot;15.9&quot;, &quot;...
+## $ num_drivers         &lt;dbl&gt; 18.8, 18.1, 18.6, 22.4, 12.0, 13.6, 10.8, 16.2,...
+## $ perc_speeding       &lt;int&gt; 39, 41, 35, 18, 35, 37, 46, 38, 34, 21, 19, 54,...
+## $ perc_alcohol        &lt;int&gt; 30, 25, 28, 26, 28, 28, 36, 30, 27, 29, 25, 41,...
+## $ perc_not_distracted &lt;int&gt; 96, 90, 84, 94, 91, 79, 87, 87, 100, 92, 95, 82...
+## $ perc_no_previous    &lt;int&gt; 80, 94, 96, 95, 89, 95, 82, 99, 100, 94, 93, 87...
+## $ insurance_premiums  &lt;dbl&gt; 784.55, 1053.48, 899.47, 827.34, 878.41, 835.50...
+## $ losses              &lt;dbl&gt; 145.08, 133.93, 110.35, 142.39, 165.63, 139.91,...</code></pre>
+<pre class="r"><code>glimpse(deaths_drivers %&gt;% filter(Year==&quot;2012&quot;) %&gt;% select(State,Population,drugdeaths,num_drivers))</code></pre>
+<pre><code>## Observations: 51
+## Variables: 4
+## $ State       &lt;fct&gt; Alabama, Alaska, Arizona, Arkansas, California, Colorad...
+## $ Population  &lt;dbl&gt; 4822023, 731449, 6553255, 2949131, 38041430, 5187582, 3...
+## $ drugdeaths  &lt;dbl&gt; 632, 132, 1206, 398, 4304, 826, 451, 150, 85, 2697, 111...
+## $ num_drivers &lt;dbl&gt; 18.8, 18.1, 18.6, 22.4, 12.0, 13.6, 10.8, 16.2, 5.9, 17...</code></pre>
+<pre class="r"><code>glimpse(deaths_drivers %&gt;% arrange(desc(drugdeaths)))</code></pre>
+<pre><code>## Observations: 867
+## Variables: 12
+## $ State               &lt;fct&gt; California, California, California, California,...
+## $ Year                &lt;dbl&gt; 2015, 2014, 2013, 2011, 2012, 2009, 2010, 2007,...
+## $ drugdeaths          &lt;dbl&gt; 5025, 4816, 4747, 4429, 4304, 4290, 4258, 4178,...
+## $ Population          &lt;dbl&gt; 39144818, 38802500, 38332521, 37691912, 3804143...
+## $ cruderate           &lt;chr&gt; &quot;12.8&quot;, &quot;12.4&quot;, &quot;12.4&quot;, &quot;11.8&quot;, &quot;11.3&quot;, &quot;11.6&quot;,...
+## $ num_drivers         &lt;dbl&gt; 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0,...
+## $ perc_speeding       &lt;int&gt; 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35,...
+## $ perc_alcohol        &lt;int&gt; 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,...
+## $ perc_not_distracted &lt;int&gt; 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91, 91,...
+## $ perc_no_previous    &lt;int&gt; 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89, 89,...
+## $ insurance_premiums  &lt;dbl&gt; 878.41, 878.41, 878.41, 878.41, 878.41, 878.41,...
+## $ losses              &lt;dbl&gt; 165.63, 165.63, 165.63, 165.63, 165.63, 165.63,...</code></pre>
+<pre class="r"><code>glimpse(deaths_drivers2 &lt;- deaths_drivers %&gt;% filter(Year==&quot;2012&quot;) %&gt;% mutate(fatal_rate=(num_drivers/(Population/100000))) %&gt;% arrange(desc(fatal_rate)))</code></pre>
+<pre><code>## Observations: 51
+## Variables: 13
+## $ State               &lt;fct&gt; North Dakota, Wyoming, Alaska, South Dakota, Ve...
+## $ Year                &lt;dbl&gt; 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012,...
+## $ drugdeaths          &lt;dbl&gt; 27, 99, 132, 45, 81, 129, 150, 576, 159, 157, 2...
+## $ Population          &lt;dbl&gt; 699628, 576412, 731449, 833354, 626011, 1005141...
+## $ cruderate           &lt;chr&gt; &quot;3.9&quot;, &quot;17.2&quot;, &quot;18&quot;, &quot;5.4&quot;, &quot;12.9&quot;, &quot;12.8&quot;, &quot;16...
+## $ num_drivers         &lt;dbl&gt; 23.9, 17.4, 18.1, 19.4, 13.6, 21.4, 16.2, 23.8,...
+## $ perc_speeding       &lt;int&gt; 23, 42, 41, 31, 30, 39, 38, 34, 54, 38, 34, 36,...
+## $ perc_alcohol        &lt;int&gt; 42, 32, 25, 33, 30, 44, 30, 28, 41, 30, 38, 29,...
+## $ perc_not_distracted &lt;int&gt; 99, 81, 90, 98, 96, 84, 87, 97, 82, 87, 92, 85,...
+## $ perc_no_previous    &lt;int&gt; 86, 90, 94, 86, 95, 85, 99, 87, 87, 84, 79, 98,...
+## $ insurance_premiums  &lt;dbl&gt; 688.75, 791.14, 1053.48, 669.31, 716.20, 816.21...
+## $ losses              &lt;dbl&gt; 109.72, 122.04, 133.93, 96.87, 109.61, 85.15, 1...
+## $ fatal_rate          &lt;dbl&gt; 3.4161011, 3.0186741, 2.4745403, 2.3279423, 2.1...</code></pre>
+<pre class="r"><code>glimpse(deaths_drivers2 &lt;- deaths_drivers2 %&gt;% mutate(num_alc=(perc_alcohol/100)*num_drivers))</code></pre>
+<pre><code>## Observations: 51
+## Variables: 14
+## $ State               &lt;fct&gt; North Dakota, Wyoming, Alaska, South Dakota, Ve...
+## $ Year                &lt;dbl&gt; 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012,...
+## $ drugdeaths          &lt;dbl&gt; 27, 99, 132, 45, 81, 129, 150, 576, 159, 157, 2...
+## $ Population          &lt;dbl&gt; 699628, 576412, 731449, 833354, 626011, 1005141...
+## $ cruderate           &lt;chr&gt; &quot;3.9&quot;, &quot;17.2&quot;, &quot;18&quot;, &quot;5.4&quot;, &quot;12.9&quot;, &quot;12.8&quot;, &quot;16...
+## $ num_drivers         &lt;dbl&gt; 23.9, 17.4, 18.1, 19.4, 13.6, 21.4, 16.2, 23.8,...
+## $ perc_speeding       &lt;int&gt; 23, 42, 41, 31, 30, 39, 38, 34, 54, 38, 34, 36,...
+## $ perc_alcohol        &lt;int&gt; 42, 32, 25, 33, 30, 44, 30, 28, 41, 30, 38, 29,...
+## $ perc_not_distracted &lt;int&gt; 99, 81, 90, 98, 96, 84, 87, 97, 82, 87, 92, 85,...
+## $ perc_no_previous    &lt;int&gt; 86, 90, 94, 86, 95, 85, 99, 87, 87, 84, 79, 98,...
+## $ insurance_premiums  &lt;dbl&gt; 688.75, 791.14, 1053.48, 669.31, 716.20, 816.21...
+## $ losses              &lt;dbl&gt; 109.72, 122.04, 133.93, 96.87, 109.61, 85.15, 1...
+## $ fatal_rate          &lt;dbl&gt; 3.4161011, 3.0186741, 2.4745403, 2.3279423, 2.1...
+## $ num_alc             &lt;dbl&gt; 10.038, 5.568, 4.525, 6.402, 4.080, 9.416, 4.86...</code></pre>
+<p>For summary statistics, I calculated the mean, standard deviation, variance, quantile, min, median, max, and ndistinct for drugdeaths, num_drivers, and crude rate. I created a categorical variable called insurance_cat using the numeric variable insurance_premiums to make low (&lt;750), med (750-1000), and high (&gt;1000) groups of car insurance premiums. I grouped by insurance_cat when calculating the summary statistics for num_drivers and cruderate.
+I found it interesting that the high insurance group had the lowest average number of drivers involved in fatal collisions which means that car insurance premiums are not always consistent with the number of high-risk drivers because some collisions are more costly than others. Insurance providers base their prices on several indicators, which contributes to the variation. However, when looking at individual states like New Jersey, which has the highest car insurance premium, there are a number of high risk drivers. On the other end, Idaho, which has lower car insurance premiums, have the good drivers. Furthermore, the low insurance group had the lowest mean crude rate of drug deaths which is an interesting correlation.
+As seen in the correlation matrix, drugdeaths has a .955 positive correlation with the Population size.</p>
+<pre class="r"><code>deaths_drivers2 %&gt;% summarize(mean_dd=mean(drugdeaths), sd_dd=sd(drugdeaths), var_dd=var(drugdeaths), quantile_dd=IQR(drugdeaths), min_dd=min(drugdeaths),med_dd=median(drugdeaths), max_dd=max(drugdeaths), ndist_dd=n_distinct(drugdeaths))</code></pre>
+<pre><code>## # A tibble: 1 x 8
+##   mean_dd sd_dd  var_dd quantile_dd min_dd med_dd max_dd ndist_dd
+##     &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;    &lt;int&gt;
+## 1    859.  850. 722206.         926     27    611   4304       50</code></pre>
+<pre class="r"><code>deaths_drivers2 &lt;- deaths_drivers2 %&gt;% mutate(insurance_cat=case_when(insurance_premiums&gt;1000 ~ &quot;high&quot;, 750&lt;=insurance_premiums &amp; insurance_premiums&lt;=1000 ~ &quot;med&quot;, insurance_premiums&lt;750 ~ &quot;low&quot;))
+
+deaths_drivers2 %&gt;% group_by(insurance_cat) %&gt;% summarize(mean_nd=mean(num_drivers), sd_nd=sd(num_drivers), var_nd=var(num_drivers), quantile_nd=IQR(num_drivers), min_nd=min(num_drivers),med_nd=median(num_drivers), max_nd=max(num_drivers),ndist_nd=n_distinct(num_drivers))</code></pre>
+<pre><code>## # A tibble: 3 x 9
+##   insurance_cat mean_nd sd_nd var_nd quantile_nd min_nd med_nd max_nd ndist_nd
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;    &lt;int&gt;
+## 1 high             13.8  4.29   18.4        6.35    5.9   13.3   20.5       14
+## 2 low              15.7  3.19   10.2        1.95   11.6   15     23.9       12
+## 3 med              16.9  4.12   17.0        6.7     9.6   17.6   23.9       23</code></pre>
+<pre class="r"><code>deaths_drivers2$cruderate&lt;-as.numeric(deaths_drivers2$cruderate)
+deaths_drivers2 %&gt;% group_by(insurance_cat) %&gt;% summarize(mean_cr=mean(cruderate), sd_cr=sd(cruderate), var_cr=var(cruderate), quantile_cr=IQR(cruderate), min_cr=min(cruderate),med_cr=median(cruderate), max_cr=max(cruderate),ndist_cr=n_distinct(cruderate))</code></pre>
+<pre><code>## # A tibble: 3 x 9
+##   insurance_cat mean_cr sd_cr var_cr quantile_cr min_cr med_cr max_cr ndist_cr
+##   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;    &lt;int&gt;
+## 1 high             15.0  3.21   10.3        3.45    9.8   14.4   22.1       13
+## 2 low              11.5  4.32   18.6        4.9     3.9   12.2   19.1       11
+## 3 med              16.0  5.40   29.1        7.10    9.2   14.6   31         24</code></pre>
+<pre class="r"><code>deaths_drivers2 %&gt;% select(-Year) %&gt;% select_if(is.numeric) %&gt;% cor()</code></pre>
+<pre><code>##                      drugdeaths  Population   cruderate  num_drivers
+## drugdeaths           1.00000000  0.95513799  0.07731657 -0.095416269
+## Population           0.95513799  1.00000000 -0.12469024 -0.130219600
+## cruderate            0.07731657 -0.12469024  1.00000000  0.132529280
+## num_drivers         -0.09541627 -0.13021960  0.13252928  1.000000000
+## perc_speeding        0.01194306  0.00289451  0.13507932 -0.029080146
+## perc_alcohol        -0.08115967 -0.02514633 -0.33870857  0.199426344
+## perc_not_distracted  0.14162766  0.11619637  0.01398025  0.009781764
+## perc_no_previous    -0.16574871 -0.13691586  0.04451828 -0.017941877
+## insurance_premiums   0.20597608  0.19647219  0.22830701 -0.199701946
+## losses               0.38239413  0.36348680  0.19344649 -0.036011082
+## fatal_rate          -0.56987331 -0.51494821 -0.12504271  0.363341757
+## num_alc             -0.12151346 -0.10882336 -0.11787036  0.852613216
+##                     perc_speeding perc_alcohol perc_not_distracted
+## drugdeaths             0.01194306  -0.08115967         0.141627664
+## Population             0.00289451  -0.02514633         0.116196372
+## cruderate              0.13507932  -0.33870857         0.013980246
+## num_drivers           -0.02908015   0.19942634         0.009781764
+## perc_speeding          1.00000000   0.28624417         0.131737796
+## perc_alcohol           0.28624417   1.00000000         0.043379788
+## perc_not_distracted    0.13173780   0.04337979         1.000000000
+## perc_no_previous       0.01406622  -0.24545506        -0.195264522
+## insurance_premiums     0.04254126  -0.01745071         0.019578112
+## losses                -0.06124052  -0.08391593        -0.058466772
+## fatal_rate             0.12618153   0.26837760         0.107833365
+## num_alc                0.13858624   0.66221173         0.045359001
+##                     perc_no_previous insurance_premiums      losses fatal_rate
+## drugdeaths               -0.16574871         0.20597608  0.38239413 -0.5698733
+## Population               -0.13691586         0.19647219  0.36348680 -0.5149482
+## cruderate                 0.04451828         0.22830701  0.19344649 -0.1250427
+## num_drivers              -0.01794188        -0.19970195 -0.03601108  0.3633418
+## perc_speeding             0.01406622         0.04254126 -0.06124052  0.1261815
+## perc_alcohol             -0.24545506        -0.01745071 -0.08391593  0.2683776
+## perc_not_distracted      -0.19526452         0.01957811 -0.05846677  0.1078334
+## perc_no_previous          1.00000000         0.07553314  0.04277014  0.1207565
+## insurance_premiums        0.07553314         1.00000000  0.62311644 -0.1760540
+## losses                    0.04277014         0.62311644  1.00000000 -0.3893147
+## fatal_rate                0.12075654        -0.17605400 -0.38931465  1.0000000
+## num_alc                  -0.11934571        -0.17061197 -0.11254674  0.4364917
+##                        num_alc
+## drugdeaths          -0.1215135
+## Population          -0.1088234
+## cruderate           -0.1178704
+## num_drivers          0.8526132
+## perc_speeding        0.1385862
+## perc_alcohol         0.6622117
+## perc_not_distracted  0.0453590
+## perc_no_previous    -0.1193457
+## insurance_premiums  -0.1706120
+## losses              -0.1125467
+## fatal_rate           0.4364917
+## num_alc              1.0000000</code></pre>
+</div>
+<div id="visualizing" class="section level2">
+<h2>Visualizing</h2>
+<p>The first plot is a scatterplot of Drug Deaths vs. Drivers in Fatal Collisions with the color of the points based on percentage of drivers involved in fatal collisions who were alcohol-impaired, and each point is labeled with the corresponding State. There seems to be a slight positive correlation between drug deaths and drivers in fatal collisions. Perhaps people that are heavily dependent on drugs tend to be reckless drivers because drugs impair cognitive function. Furthermore, the states with a higher percent of alcohol induced collisions had a greater number of drivers involved in fatal collisions. Thus, drinking and driving may be linked to a significant increase in the number of car accidents.</p>
+<pre class="r"><code>library(ggplot2)
+install.packages(&quot;ggrepel&quot;, repos=&quot;https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip&quot;)</code></pre>
+<pre><code>## Warning: unable to access index for repository https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip/src/contrib:
+##   cannot open URL &#39;https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip/src/contrib/PACKAGES&#39;</code></pre>
+<pre><code>## Warning: package &#39;ggrepel&#39; is not available (for R version 3.6.1)</code></pre>
+<pre><code>## Warning: unable to access index for repository https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip/bin/windows/contrib/3.6:
+##   cannot open URL &#39;https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip/bin/windows/contrib/3.6/PACKAGES&#39;</code></pre>
+<pre class="r"><code>library(ggrepel)
+
+ggplot(deaths_drivers2, aes(x=drugdeaths, y=num_drivers, color=perc_alcohol))+geom_point(size=3)+theme_dark()+ggtitle(&quot;Drug Deaths vs. Drivers in Fatal Collisions&quot;)+ylab(&quot;Drivers in Fatal Collisions&quot;)+xlab(&quot;Drug Deaths&quot;)+scale_x_continuous(breaks=seq(0,5000,500))+scale_y_continuous(breaks=seq(0,25,2))+geom_text_repel(aes(label=State), color=&quot;white&quot;, size=2)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>The second plot is a barplot of drug deaths by state with the bars colored according to their insurance category. There is a clear positive relationship between the number of drug deaths and the state’s population size. California, Florida, and Texas have the greatest population size and also the highest number of drug deaths. Within the top 5 States of drug deaths, 3 of them (Florida, Texas, and New York) are in the high car insurance category. Drug/alcohol intake is most likely something insurance companies take into consideration when determining premium prices.</p>
+<pre class="r"><code>ggplot(deaths_drivers2, aes(x=reorder(State, -drugdeaths), y=drugdeaths, fill=insurance_cat))+geom_bar(stat=&quot;summary&quot;, fun.y=&quot;mean&quot;, width=.75)+theme(text = element_text(size=8), axis.text.x=element_text(angle=45, hjust=1))+ggtitle(&quot;Drug Deaths by State&quot;)+ylab(&quot;Drug Deaths&quot;)+xlab(&quot;State&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The third plot is a barplot of the mean number of drug deaths by insurance categories with error bars. The primary trend of the graph is that the number of drug deaths is highest for the states with high car insurance premiums, followed by medium and then low. People who regularly use drugs may be driving under the influence and are at higher risk for accidents. In states like Florida and Texas, Car insurance companies will increase insurance premiums if there are a greater number of high risk drivers. In essence, premiums in each state reflect the insurance companies’ assessment of who is likely to cost them in the future.</p>
+<pre class="r"><code>ggplot(deaths_drivers2, aes(x=reorder(insurance_cat, -drugdeaths), y=drugdeaths))+geom_bar(stat=&quot;summary&quot;, fun.y=&quot;mean&quot;)+geom_errorbar(stat=&quot;summary&quot;)+ggtitle(&quot;Drug Deaths by Insurance Category&quot;)+ylab(&quot;Drug Deaths&quot;)+xlab(&quot;Insurance Category&quot;)</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="dimensionality-reduction" class="section level2">
+<h2>Dimensionality Reduction</h2>
+<p>I ran a principal component analysis for all the numeric variables of the combined dataset. When looking at the loadings of PC1, drugdeaths and Population are correlated and fatal_rate and num_alc are correlated. Bigger states seem to have more drug deaths and states with a greater number of alcohol related collisions have a higher fatal collision rate. The loadings of PC2 appear to have no significant correlation and the values are mostly arbitrary. In the loadings of PC3, crude rate of drug deaths and car insurance premiums are correlated, possibly because drug use is related to reckless driving.</p>
+<pre class="r"><code>deaths_drivers3 &lt;- deaths_drivers2 %&gt;% select(-Year) %&gt;% select_if(is.numeric) %&gt;% scale()
+rownames(deaths_drivers3)&lt;-deaths_drivers2$State
+data_pca&lt;-princomp(deaths_drivers3)
+names(data_pca)</code></pre>
+<pre><code>## [1] &quot;sdev&quot;     &quot;loadings&quot; &quot;center&quot;   &quot;scale&quot;    &quot;n.obs&quot;    &quot;scores&quot;   &quot;call&quot;</code></pre>
+<pre class="r"><code>summary(data_pca, loadings=T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2    Comp.3    Comp.4     Comp.5
+## Standard deviation     1.7742727 1.4318652 1.2178417 1.0949502 1.05347394
+## Proportion of Variance 0.2675837 0.1742702 0.1260668 0.1019079 0.09433362
+## Cumulative Proportion  0.2675837 0.4418539 0.5679207 0.6698286 0.76416218
+##                            Comp.6     Comp.7     Comp.8     Comp.9   Comp.10
+## Standard deviation     0.95433680 0.91573147 0.63328809 0.59390986 0.4925158
+## Proportion of Variance 0.07741449 0.07127795 0.03408957 0.02998196 0.0206186
+## Cumulative Proportion  0.84157667 0.91285462 0.94694419 0.97692615 0.9975448
+##                            Comp.11      Comp.12
+## Standard deviation     0.144021810 0.0902383893
+## Proportion of Variance 0.001763094 0.0006921522
+## Cumulative Proportion  0.999307848 1.0000000000
+## 
+## Loadings:
+##                     Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7 Comp.8
+## drugdeaths           0.412  0.377  0.112  0.102  0.155  0.241         0.243
+## Population           0.392  0.387  0.189  0.118         0.253  0.153  0.284
+## cruderate            0.109 -0.103 -0.516 -0.129  0.542        -0.339       
+## num_drivers         -0.298  0.328 -0.325  0.387  0.299                     
+## perc_speeding               0.166 -0.108 -0.656         0.533 -0.259       
+## perc_alcohol        -0.248  0.434        -0.188 -0.427        -0.161 -0.148
+## perc_not_distracted         0.189  0.139 -0.459  0.446 -0.260  0.598 -0.320
+## perc_no_previous           -0.288 -0.301  0.115 -0.222  0.601  0.522 -0.214
+## insurance_premiums   0.269        -0.466 -0.243 -0.326 -0.320  0.144  0.329
+## losses               0.333  0.171 -0.435        -0.234 -0.222        -0.339
+## fatal_rate          -0.439        -0.112 -0.143                0.326  0.665
+## num_alc             -0.365  0.470 -0.183  0.187                            
+##                     Comp.9 Comp.10 Comp.11 Comp.12
+## drugdeaths           0.112  0.113   0.704         
+## Population                         -0.690         
+## cruderate            0.400  0.297  -0.156         
+## num_drivers         -0.207 -0.280           0.572 
+## perc_speeding       -0.377 -0.160                 
+## perc_alcohol         0.500  0.311           0.357 
+## perc_not_distracted                               
+## perc_no_previous     0.286                        
+## insurance_premiums   0.181 -0.524                 
+## losses              -0.464  0.475                 
+## fatal_rate          -0.216  0.417                 
+## num_alc                    -0.136          -0.735</code></pre>
+<pre class="r"><code>eigval&lt;-data_pca$sdev^2 #square to convert SDs to eigenvalues
+varprop=round(eigval/sum(eigval),2) #proportion of var explained by each PC
+
+#Scree plot: How many components to keep?
+ggplot()+geom_bar(aes(y=varprop,x=1:12),stat=&quot;identity&quot;)+xlab(&quot;&quot;)+geom_path(aes(y=varprop,x=1:12))+
+  geom_text(aes(x=1:12,y=varprop,label=round(varprop,2)),vjust=1,col=&quot;white&quot;,size=5)+
+  scale_y_continuous(breaks=seq(0,.6,.2),labels = scales::percent)+
+  scale_x_continuous(breaks=1:12)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="r"><code>round(cumsum(eigval)/sum(eigval),2) #cumulative proportion of variance</code></pre>
+<pre><code>##  Comp.1  Comp.2  Comp.3  Comp.4  Comp.5  Comp.6  Comp.7  Comp.8  Comp.9 Comp.10 
+##    0.27    0.44    0.57    0.67    0.76    0.84    0.91    0.95    0.98    1.00 
+## Comp.11 Comp.12 
+##    1.00    1.00</code></pre>
+<pre class="r"><code>eigval #eigenvalues</code></pre>
+<pre><code>##      Comp.1      Comp.2      Comp.3      Comp.4      Comp.5      Comp.6 
+## 3.148043508 2.050237903 1.483138480 1.198916039 1.109807340 0.910758725 
+##      Comp.7      Comp.8      Comp.9     Comp.10     Comp.11     Comp.12 
+## 0.838564121 0.401053810 0.352728923 0.242571786 0.020742282 0.008142967</code></pre>
+<pre class="r"><code>eigen(cor(deaths_drivers3))</code></pre>
+<pre><code>## eigen() decomposition
+## $values
+##  [1] 3.211004378 2.091242661 1.512801250 1.222894359 1.132003487 0.928973899
+##  [7] 0.855335403 0.409074886 0.359783502 0.247423222 0.021157128 0.008305826
+## 
+## $vectors
+##               [,1]        [,2]        [,3]        [,4]         [,5]        [,6]
+##  [1,] -0.411651554 -0.37714251 -0.11221088 -0.10235708  0.155349054 -0.24056040
+##  [2,] -0.391765432 -0.38668223 -0.18897526 -0.11812591  0.012315139 -0.25297298
+##  [3,] -0.109074528  0.10319017  0.51593359  0.12914679  0.542306488 -0.03834042
+##  [4,]  0.298396509 -0.32777631  0.32480529 -0.38739581  0.298827728 -0.05973296
+##  [5,]  0.070753739 -0.16592806  0.10794253  0.65643801 -0.028839994 -0.53345282
+##  [6,]  0.248407307 -0.43397390 -0.07546466  0.18828565 -0.426528448  0.06608175
+##  [7,] -0.002982899 -0.18916885 -0.13889074  0.45902915  0.445815346  0.26033189
+##  [8,]  0.012307163  0.28780707  0.30105398 -0.11470924 -0.221872632 -0.60090362
+##  [9,] -0.268517021 -0.07125395  0.46601100  0.24273530 -0.325712959  0.32033105
+## [10,] -0.332704195 -0.17082461  0.43540778 -0.06437846 -0.233613919  0.22235685
+## [11,]  0.439344147  0.03031697  0.11244682  0.14324837 -0.030162998  0.04272625
+## [12,]  0.365288542 -0.46956824  0.18261986 -0.18708679 -0.003069089 -0.03769229
+##               [,7]        [,8]        [,9]        [,10]        [,11]
+##  [1,] -0.060762107 -0.24305735  0.11198138 -0.113231077  0.703621443
+##  [2,] -0.153196683 -0.28360315 -0.01393827 -0.051201162 -0.690246341
+##  [3,]  0.338997199 -0.09915648  0.39968834 -0.297077962 -0.156387868
+##  [4,] -0.059687422  0.05687238 -0.20681666  0.280102170 -0.003440232
+##  [5,]  0.258884845  0.06221880 -0.37715612  0.160397695  0.018722946
+##  [6,]  0.160734820  0.14828683  0.49990933 -0.311242424 -0.022111058
+##  [7,] -0.598020083  0.31969870  0.08502469  0.009121071 -0.021271059
+##  [8,] -0.522159507  0.21351909  0.28615077 -0.049323153  0.011419704
+##  [9,] -0.144155902 -0.32924955  0.18080914  0.524098692  0.024956197
+## [10,] -0.065532657  0.33851867 -0.46411011 -0.475318192  0.010417760
+## [11,] -0.325783237 -0.66475025 -0.21592831 -0.416734801  0.042864086
+## [12,] -0.003356672  0.09420734  0.09359107  0.135847972 -0.004106968
+##               [,12]
+##  [1,] -4.742318e-03
+##  [2,] -5.339379e-03
+##  [3,]  4.251471e-02
+##  [4,] -5.718767e-01
+##  [5,] -1.668662e-02
+##  [6,] -3.569678e-01
+##  [7,] -9.148925e-03
+##  [8,] -1.499611e-02
+##  [9,] -2.921487e-02
+## [10,]  4.539594e-02
+## [11,]  8.112204e-05
+## [12,]  7.349634e-01</code></pre>
+<p>Due to arbitrary relationships, I had difficulty interpreting the PC score plots.
+According to the PC1 vs. PC2 plot, the disparities in drug deaths and Population between the extremes are evident. States with higher population size have more drug deaths. PC2 did not have any apparent correlations.
+According to the PC3 vs. PC4 plot, the disparities in crude rate of drug deaths and insurance premiums is apparent. States with higher crude rates have higher insurance premiums. PC4 did not have any apparent correlations.</p>
+<pre class="r"><code>datadf&lt;-data.frame(PC1=data_pca$scores[,1], PC2=data_pca$scores[,2], State=deaths_drivers2$State)
+ggplot(datadf,aes(PC1, PC2))+geom_point()+geom_text_repel(aes(label=State), size=2)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>State&lt;-deaths_drivers2$State
+data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,Comp.1) #highest on PC1</code></pre>
+<pre><code>##        State   Comp.1     Comp.2     Comp.3      Comp.4     Comp.5     Comp.6
+## 1 New Jersey 2.595877 -0.1928181 -0.1342819  0.08077037 -0.6470294 -2.5973685
+## 2   New York 3.080619  1.3134232  0.5631967 -0.47430422 -0.5842388 -0.6997966
+## 3 California 4.867477  2.7687154  1.6609872  0.46213779  0.1469645  1.9427148
+##        Comp.7    Comp.8     Comp.9    Comp.10     Comp.11     Comp.12
+## 1 -0.08947667 0.8173096  0.1747839 -0.5132701  0.08969926 -0.10085615
+## 2  0.08172016 1.1653255 -0.2703086 -0.7909167 -0.05229132  0.01547399
+## 3  1.13442864 1.2838774 -0.5311523  0.9154610 -0.20351697 -0.04004624</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=desc(Comp.1)) #lowest on PC1</code></pre>
+<pre><code>##          State    Comp.1    Comp.2    Comp.3      Comp.4      Comp.5     Comp.6
+## 1 North Dakota -5.208091 2.3287066 0.7652213  0.87208782 -0.71975213 -0.9421891
+## 2 South Dakota -3.293835 0.2765361 1.5493857  0.02335608  0.02175602 -0.2810401
+## 3      Montana -4.279495 2.0653479 0.1471575 -0.38054200 -0.47326172  0.2085564
+##       Comp.7    Comp.8     Comp.9    Comp.10    Comp.11    Comp.12
+## 1  1.7524575 0.6753916 -0.1617235  0.5571278  0.1919343 -0.1937209
+## 2  1.1169790 0.4441289 -0.6907498 -0.1892512  0.1476734  0.1223078
+## 3 -0.5296466 0.6557201  1.0459810 -0.3253462 -0.0534025 -0.1309986</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=Comp.2) #highest on PC2</code></pre>
+<pre><code>##            State    Comp.1   Comp.2     Comp.3     Comp.4     Comp.5     Comp.6
+## 1 South Carolina -2.564977 3.122937 -0.1166901 0.07529518  0.2357333 -0.3121765
+## 2          Texas  1.457964 4.036499  0.2507703 0.27351115 -0.7640134  1.0184087
+## 3     California  4.867477 2.768715  1.6609872 0.46213779  0.1469645  1.9427148
+##       Comp.7      Comp.8     Comp.9    Comp.10    Comp.11     Comp.12
+## 1 -0.6312859 -0.83530956  0.5533231 -1.0009017 -0.1085572 -0.20379767
+## 2  0.4629176  0.07174946 -0.0381340 -0.3241504 -0.4614893  0.01202017
+## 3  1.1344286  1.28387739 -0.5311523  0.9154610 -0.2035170 -0.04004624</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=desc(Comp.2)) #lowest on PC2</code></pre>
+<pre><code>##                  State    Comp.1    Comp.2     Comp.3    Comp.4      Comp.5
+## 1 District of Columbia 1.3281649 -2.710500 -0.5015090 -2.261741 -1.37515775
+## 2                 Utah 1.1595022 -3.141499 -0.1059203 -1.093399  1.78139470
+## 3               Oregon 0.1764704 -1.801425  0.7864739  0.260834 -0.04132516
+##       Comp.6     Comp.7    Comp.8      Comp.9    Comp.10      Comp.11
+## 1 -0.4599367  1.6202149 0.1670935  0.52503610 -0.4728252  0.046681787
+## 2  1.5171323 -0.1022447 0.1786705 -0.50285081 -0.5455877 -0.026806269
+## 3  0.7599577 -0.9547805 0.3720048  0.04759435 -0.5485138 -0.003770853
+##       Comp.12
+## 1 -0.12905031
+## 2 -0.32882646
+## 3 -0.04652346</code></pre>
+<pre class="r"><code>deaths_drivers2%&gt;%filter(State%in%c(&quot;North Dakota&quot;, &quot;South Dakota&quot;, &quot;Montana&quot;))</code></pre>
+<pre><code>## # A tibble: 3 x 15
+##   State  Year drugdeaths Population cruderate num_drivers perc_speeding
+##   &lt;fct&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;         &lt;int&gt;
+## 1 Nort~  2012         27     699628       3.9        23.9            23
+## 2 Sout~  2012         45     833354       5.4        19.4            31
+## 3 Mont~  2012        129    1005141      12.8        21.4            39
+## # ... with 8 more variables: perc_alcohol &lt;int&gt;, perc_not_distracted &lt;int&gt;,
+## #   perc_no_previous &lt;int&gt;, insurance_premiums &lt;dbl&gt;, losses &lt;dbl&gt;,
+## #   fatal_rate &lt;dbl&gt;, num_alc &lt;dbl&gt;, insurance_cat &lt;chr&gt;</code></pre>
+<pre class="r"><code>deaths_drivers2%&gt;%filter(State%in%c(&quot;New Jersey&quot;, &quot;New York&quot;, &quot;California&quot;))</code></pre>
+<pre><code>## # A tibble: 3 x 15
+##   State  Year drugdeaths Population cruderate num_drivers perc_speeding
+##   &lt;fct&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;         &lt;int&gt;
+## 1 New ~  2012       1268    8864590      14.3        11.2            16
+## 2 New ~  2012       2262   19570261      11.6        12.3            32
+## 3 Cali~  2012       4304   38041430      11.3        12              35
+## # ... with 8 more variables: perc_alcohol &lt;int&gt;, perc_not_distracted &lt;int&gt;,
+## #   perc_no_previous &lt;int&gt;, insurance_premiums &lt;dbl&gt;, losses &lt;dbl&gt;,
+## #   fatal_rate &lt;dbl&gt;, num_alc &lt;dbl&gt;, insurance_cat &lt;chr&gt;</code></pre>
+<pre class="r"><code>datadf2&lt;-data.frame(PC3=data_pca$scores[,3], PC4=data_pca$scores[,4], State=deaths_drivers2$State)
+ggplot(datadf2,aes(PC3, PC4))+geom_point()+geom_text_repel(aes(label=State), size=2)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,Comp.3) #highest on PC3</code></pre>
+<pre><code>##        State     Comp.1    Comp.2   Comp.3     Comp.4     Comp.5     Comp.6
+## 1       Iowa -0.5075294 -1.326432 1.831265 1.07722777  0.7527773 -0.8116604
+## 2  Minnesota  0.8512366 -1.419123 1.640456 0.08513844 -0.5361693 -0.6143424
+## 3 California  4.8674770  2.768715 1.660987 0.46213779  0.1469645  1.9427148
+##      Comp.7     Comp.8       Comp.9    Comp.10     Comp.11     Comp.12
+## 1 0.8505814 -0.6183579 -0.401577702 -0.2885292 -0.06790162  0.02173381
+## 2 0.1922073 -0.5655707 -0.008386873  0.3148404 -0.08847807 -0.07572936
+## 3 1.1344286  1.2838774 -0.531152346  0.9154610 -0.20351697 -0.04004624</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=desc(Comp.3)) #lowest on PC3</code></pre>
+<pre><code>##           State     Comp.1     Comp.2    Comp.3     Comp.4     Comp.5
+## 1      Delaware -0.6230488 -0.8007586 -2.065780 -0.9355843 -0.8298283
+## 2 West Virginia -0.7607345  0.5779787 -3.254930 -0.2111833  2.5401826
+## 3     Louisiana  0.3975292  1.0066957 -3.026292  0.5387919 -2.0733358
+##        Comp.6     Comp.7     Comp.8     Comp.9      Comp.10     Comp.11
+## 1  0.19438913  1.0588526  0.3587538 -0.1912780  0.006906744  0.00367498
+## 2 -0.51384223 -0.4322972  0.1681390  0.2563735  0.347628003 -0.29127611
+## 3 -0.09844226  0.5395970 -0.7621527 -0.5650635 -0.613811973  0.07533389
+##       Comp.12
+## 1 0.040905782
+## 2 0.013465784
+## 3 0.001630402</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=Comp.4) #highest on PC4</code></pre>
+<pre><code>##         State     Comp.1    Comp.2     Comp.3   Comp.4     Comp.5     Comp.6
+## 1  New Mexico -0.4465419 -1.611768 -1.5905872 1.579169  0.8091662  0.4781954
+## 2    Arkansas -0.7951753 -0.340775 -0.7487731 1.702627  0.7624636 -0.4021958
+## 3 Mississippi -0.3270607 -1.556833 -1.3461118 3.888144 -3.1554190  0.8916769
+##       Comp.7     Comp.8      Comp.9    Comp.10     Comp.11      Comp.12
+## 1 -0.3065949  0.4800062  1.21443484  0.2509381 -0.16335572 -0.007128778
+## 2  1.3684590 -0.7478932 -0.26391921 -0.3438664 -0.04614011  0.167994232
+## 3 -1.5259082  0.5661764 -0.05178075  0.2556929  0.08182479 -0.030744709</code></pre>
+<pre class="r"><code>data_pca$scores%&gt;%as.data.frame%&gt;%cbind(State,.)%&gt;%top_n(3,wt=desc(Comp.4)) #lowest on PC4</code></pre>
+<pre><code>##                  State     Comp.1     Comp.2     Comp.3    Comp.4     Comp.5
+## 1         Rhode Island 0.01877948  0.1008412 -0.6752969 -1.945049 -0.7249452
+## 2 District of Columbia 1.32816488 -2.7105000 -0.5015090 -2.261741 -1.3751577
+## 3          Connecticut 0.77171382  0.3503457 -0.1781812 -2.016143 -1.5255296
+##       Comp.6     Comp.7     Comp.8     Comp.9    Comp.10      Comp.11
+## 1 -1.9464632 -0.9291877  0.3139413  0.6543441  0.5256999 -0.167222346
+## 2 -0.4599367  1.6202149  0.1670935  0.5250361 -0.4728252  0.046681787
+## 3 -0.7914574 -0.9662727 -0.6524913 -0.6423075  0.1297436 -0.003282214
+##       Comp.12
+## 1  0.09983072
+## 2 -0.12905031
+## 3  0.09650850</code></pre>
+<pre class="r"><code>deaths_drivers2%&gt;%filter(State%in%c(&quot;Delaware&quot;, &quot;West Virginia&quot;, &quot;Louisiana&quot;))</code></pre>
+<pre><code>## # A tibble: 3 x 15
+##   State  Year drugdeaths Population cruderate num_drivers perc_speeding
+##   &lt;fct&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;         &lt;int&gt;
+## 1 Dela~  2012        150     917092      16.4        16.2            38
+## 2 West~  2012        576    1855413      31          23.8            34
+## 3 Loui~  2012        588    4601893      12.8        20.5            35
+## # ... with 8 more variables: perc_alcohol &lt;int&gt;, perc_not_distracted &lt;int&gt;,
+## #   perc_no_previous &lt;int&gt;, insurance_premiums &lt;dbl&gt;, losses &lt;dbl&gt;,
+## #   fatal_rate &lt;dbl&gt;, num_alc &lt;dbl&gt;, insurance_cat &lt;chr&gt;</code></pre>
+<pre class="r"><code>deaths_drivers2%&gt;%filter(State%in%c(&quot;Iowa&quot;, &quot;Minnesota&quot;, &quot;California&quot;))</code></pre>
+<pre><code>## # A tibble: 3 x 15
+##   State  Year drugdeaths Population cruderate num_drivers perc_speeding
+##   &lt;fct&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;         &lt;int&gt;
+## 1 Iowa   2012        268    3074186       8.7        15.7            17
+## 2 Minn~  2012        539    5379139      10           9.6            23
+## 3 Cali~  2012       4304   38041430      11.3        12              35
+## # ... with 8 more variables: perc_alcohol &lt;int&gt;, perc_not_distracted &lt;int&gt;,
+## #   perc_no_previous &lt;int&gt;, insurance_premiums &lt;dbl&gt;, losses &lt;dbl&gt;,
+## #   fatal_rate &lt;dbl&gt;, num_alc &lt;dbl&gt;, insurance_cat &lt;chr&gt;</code></pre>
+<p>The plot of loadings shows that drug deaths and population have a small angle (higher correlation), the number of drivers involved in fatal collisions is correlated with percent speeding and percent alcohol, and insurance premiums is correlated with the losses incurred by insurance companies.</p>
+<pre class="r"><code>data_pca$loadings[1:12,1:2]%&gt;%as.data.frame%&gt;%rownames_to_column%&gt;%
+ggplot()+geom_hline(aes(yintercept=0),lty=2)+
+ geom_vline(aes(xintercept=0),lty=2)+ylab(&quot;PC2&quot;)+xlab(&quot;PC1&quot;)+
+ geom_segment(aes(x=0,y=0,xend=Comp.1,yend=Comp.2),arrow=arrow(),col=&quot;red&quot;)+
+ geom_label(aes(x=Comp.1*1.1,y=Comp.2*1.1,label=rowname))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
