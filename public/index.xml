@@ -6,10 +6,40 @@
     <description>Recent content on Jeong Kim</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
+    <lastBuildDate>Thu, 12 Dec 2019 21:13:14 -0500</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Python: Regex</title>
+      <link>/blog/pythonbasics/</link>
+      <pubDate>Thu, 12 Dec 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/blog/pythonbasics/</guid>
+      <description>Regular Expressions (regex)Regular expressions are used to search a string for matches of a specific pattern.
+They can be used to make finding information a lot easier, especially in large files. You can also use regex to search and replace operations to make changes across many files.
+Some other uses include parsing/replacing strings, reformatting/cleaning/stripping data, web scraping, and much more.
+The following is a regex sheet of common regex:Figure 1: Regex sheetre.</description>
+    </item>
+    
+    <item>
+      <title>Project 2</title>
+      <link>/project2/</link>
+      <pubDate>Wed, 27 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/project2/</guid>
+      <description>IntroductionThe suicide dataset provides a statistical overview of suicide rates by year and country along with their corresponding socio-economic information. There are 9 variables with 900 observations (for the year 2014). The variables are country, year, sex, age category, population, suicide count, suicides per 100k population, HDI for year = human development index (index of life expectancy, education, and well-being), GDP per capita, and generation (Millenials, X, Y, Boomers, and Silent).</description>
+    </item>
+    
+    <item>
+      <title>Project 1</title>
+      <link>/project1/</link>
+      <pubDate>Mon, 21 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/project1/</guid>
+      <description>IntroductionThe first dataset is the bad_drivers dataset from fivethirtyeight, titled “Dear Mona, Which State Has The Worst Drivers?” This dataset provides statistical data about the number of fatal car accidents by each state in 2012. There are 8 variables with 51 observations (one for each state). The variables are state, num_drivers = number of drivers involved in fatal collisions per billion miles, perc_speeding = percentage of drivers involved in fatal collisions who were speeding, perc_alcohol = percentage of drivers involved in fatal collisions who were alcohol-impaired, perc_not_distracted = percentage of drivers involved in fatal collisions who were not distracted, perc_no_previous = percentage of drivers involved in fatal collisions who had not been involved in any previous accidents, insurance_premiums = Car insurance premiums (in dollars), and losses = losses incurred by insurance companies for collisions per insured driver (in dollars).</description>
+    </item>
     
     <item>
       <title>Projects</title>
@@ -21,26 +51,6 @@
   Project 1
   Project 2
   </description>
-    </item>
-    
-    <item>
-      <title>Project 1</title>
-      <link>/project1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/project1/</guid>
-      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-When you click the Knit button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</description>
-    </item>
-    
-    <item>
-      <title>Project 2</title>
-      <link>/project2/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/project2/</guid>
-      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-When you click the Knit button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</description>
     </item>
     
   </channel>

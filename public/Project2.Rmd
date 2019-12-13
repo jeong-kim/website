@@ -1,7 +1,7 @@
 ---
 title: "Project 2"
 author: "Jeong Kim"
-date: "11/19/2019"
+date: 2019-11-27
 output:
   pdf_document: default
   html_document: default
@@ -36,13 +36,6 @@ class_diag<-function(probs,truth){
   data.frame(acc,sens,spec,ppv,auc)
 }
 ```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
 
 ## Introduction
 *The suicide dataset provides a statistical overview of suicide rates by year and country along with their corresponding socio-economic information. There are 9 variables with 900 observations (for the year 2014). The variables are country, year, sex, age category, population, suicide count, suicides per 100k population, HDI for year = human development index (index of life expectancy, education, and well-being), GDP per capita, and generation (Millenials, X, Y, Boomers, and Silent).*
