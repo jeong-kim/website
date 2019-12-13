@@ -3,7 +3,7 @@ title: "Python: Regex"
 author: "Jeong Kim"
 date: 2019-12-12T21:13:14-05:00
 categories: ["R"]
-tags: ["R Markdown", "Python"]
+tags: ["Python", "regex"]
 ---
 
 ```{r setup, include=FALSE}
@@ -20,11 +20,9 @@ They can be used to make finding information a lot easier, especially in large f
 Some other uses include parsing/replacing strings, reformatting/cleaning/stripping data, web scraping, and much more.  
 
 The following is a regex cheat sheet:
-```{r echo=FALSE, out.width='100%'}
+```{r echo=FALSE, out.width='50%'}
 knitr::include_graphics("/img/regexsheet.jpg")
 ```
-
-
 
 re.match(r"expression",string) returns the first match in the string.
 ```{python}
