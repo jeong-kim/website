@@ -20,7 +20,7 @@
       <description>Regular Expressions (regex)Regular expressions are used to search a string for matches of a specific pattern.
 They can be used to make finding information a lot easier, especially in large files. You can also use regex to search and replace operations to make changes across many files.
 Some other uses include parsing/replacing strings, reformatting/cleaning/stripping data, web scraping, and much more.
-The following is a regex sheet of common regex:Figure 1: Regex sheetre.</description>
+The following is a regex cheat sheet:re.match(r“expression”,string) returns the first match in the string.</description>
     </item>
     
   </channel>

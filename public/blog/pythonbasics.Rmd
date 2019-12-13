@@ -19,10 +19,12 @@ Regular expressions are used to search a string for matches of a specific patter
 They can be used to make finding information a lot easier, especially in large files. You can also use regex to search and replace operations to make changes across many files.  
 Some other uses include parsing/replacing strings, reformatting/cleaning/stripping data, web scraping, and much more.  
 
-The following is a regex sheet of common regex:
-```{r echo=FALSE, fig.cap="Regex sheet", out.width='100%'}
-knitr::include_graphics("regexsheet.jpg")
+The following is a regex cheat sheet:
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics("/img/regexsheet.jpg")
 ```
+
+
 
 re.match(r"expression",string) returns the first match in the string.
 ```{python}
