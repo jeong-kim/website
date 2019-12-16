@@ -83,7 +83,6 @@ deaths_drivers2 %>% select(-Year) %>% select_if(is.numeric) %>% cor()
 The first plot is a scatterplot of Drug Deaths vs. Drivers in Fatal Collisions with the color of the points based on percentage of drivers involved in fatal collisions who were alcohol-impaired, and each point is labeled with the corresponding State. There seems to be a slight positive correlation between drug deaths and drivers in fatal collisions. Perhaps people that are heavily dependent on drugs tend to be reckless drivers because drugs impair cognitive function. Furthermore, the states with a higher percent of alcohol induced collisions had a greater number of drivers involved in fatal collisions. Thus, drinking and driving may be linked to a significant increase in the number of car accidents.
 ```{r}
 library(ggplot2)
-install.packages("ggrepel", repos="https://cran.rstudio.com/bin/windows/contrib/3.6/ggrepel_0.8.1.zip")
 library(ggrepel)
 
 ggplot(deaths_drivers2, aes(x=drugdeaths, y=num_drivers, color=perc_alcohol))+geom_point(size=3)+theme_dark()+ggtitle("Drug Deaths vs. Drivers in Fatal Collisions")+ylab("Drivers in Fatal Collisions")+xlab("Drug Deaths")+scale_x_continuous(breaks=seq(0,5000,500))+scale_y_continuous(breaks=seq(0,25,2))+geom_text_repel(aes(label=State), color="white", size=2)
